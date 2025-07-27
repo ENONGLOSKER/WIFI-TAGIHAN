@@ -85,6 +85,7 @@ def dashboard(request):
     
     return render(request, 'dashboard.html', context)
 
+# PELANGGAN /////////////////////////////////////////////////////////////////////////
 @login_required
 def pelanggan_list(request):
     """View untuk halaman daftar pelanggan"""
@@ -142,6 +143,7 @@ def pelanggan_detail(request, pk):
     
     return render(request, 'pelanggan/detail.html', context)
 
+# TAGIHAN //////////////////////////////////////////////////////////////////////////
 @login_required
 def tagihan_list(request):
     """View untuk halaman daftar tagihan"""
@@ -180,6 +182,7 @@ def tagihan_list(request):
     
     return render(request, 'tagihan/list.html', context)
 
+# PEMBAYARAN ///////////////////////////////////////////////////////////////////////
 @login_required
 def daftar_pembayaran(request):
     """View untuk halaman daftar pembayaran"""
@@ -191,6 +194,18 @@ def daftar_pembayaran(request):
     }
     
     return render(request, 'daftar_pembayaran.html', context)
+
+# PAKET ///////////////////////////////////////////////////////////////////////////
+@login_required
+def paket_list(request):
+    """View untuk halaman daftar paket"""
+    paket_list = Paket.objects.all()
+    
+    context = {
+        'paket_list': paket_list,
+    }
+    
+    return render(request, 'paket/list.html', context)
 
 # API Views untuk Chart.js (opsional, jika menggunakan AJAX)
 @login_required
