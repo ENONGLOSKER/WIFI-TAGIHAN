@@ -207,6 +207,21 @@ def paket_list(request):
     
     return render(request, 'paket/list.html', context)
 
+@login_required
+def paket_detail(request, pk):
+    """View untuk halaman detail paket"""
+    paket = get_object_or_404(Paket, pk=pk)
+    
+    # Ambil pelanggan yang menggunakan paket ini
+    pelanggan_list = paket.pelanggan_set.all()
+    
+    context = {
+        'paket': paket,
+        'pelanggan_list': pelanggan_list,
+    }
+    
+    return render(request, 'paket/detail.html', context)
+
 # API Views untuk Chart.js (opsional, jika menggunakan AJAX)
 @login_required
 def api_pendapatan_per_bulan(request):
