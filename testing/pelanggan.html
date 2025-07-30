@@ -248,6 +248,82 @@
             background-color: var(--bs-gray-light);
             color: var(--bs-dark);
         }
+
+
+        /* badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease-in-out;
+            cursor: default;
+            border: 1px solid transparent;
+            overflow: hidden; /* Penting untuk mengontrol animasi yang mungkin meluber */
+            position: relative; /* Diperlukan jika ingin animasi yang lebih kompleks di masa depan */
+        }
+
+        /* Styling untuk ikon bulat di sebelah kiri teks */
+        .badge::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            background-color: currentColor;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+
+            /* --- Animasi Berkedip --- */
+            animation: pulse 1.5s infinite ease-in-out; /* Menerapkan animasi pulse */
+        }
+
+        /* --- Definisi Keyframes untuk Animasi Berkedip --- */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 0 0px currentColor; /* Initial state, no external glow */
+            }
+            50% {
+                transform: scale(1.1); /* Sedikit membesar */
+                opacity: 0.8; /* Sedikit memudar */
+                box-shadow: 0 0 0 5px rgba(255, 255, 255, 0); /* Mengembangkan glow transparan */
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 0 0px currentColor; /* Kembali ke ukuran dan opacity awal */
+            }
+        }
+
+
+        /* Styling untuk badge "Undetectable" / Aktif */
+        .badge.badge-bg.aktif {
+            background-color: #e6ffe6;
+            color: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.2), 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-color: #90ee90;
+        }
+
+        /* Styling untuk badge "Conditional" / Tidak Aktif */
+        .badge.badge-bg.tidak-aktif {
+            background-color: #fffacd;
+            color: #d69f00;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.2), 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-color: #ffd700;
+        }
+
+        /* Hover effect (opsional, untuk interaksi) */
+        .badge:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
     </style>
 </head>
 <body>
@@ -451,7 +527,21 @@
                                                 <td>paket</td> 
                                                 <td></td> 
                                                 <td>
-                                                    <span class="badge badge-bg-success">Aktif</span>
+                                                    <span class="badge badge-bg aktif">aktif</span>
+                                                </td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></button>
+                                                    <button class="btn btn-sm btn-outline-success"><i class="bi bi-currency-dollar"></i></button>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>nama</td>
+                                                <td>lokasi</td>
+                                                <td>paket</td> 
+                                                <td></td> 
+                                                <td>
+                                                    <span class="badge badge-bg tidak-aktif">tidak aktif</span>
                                                 </td>
                                                 <td>
                                                     <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></button>

@@ -1,17 +1,18 @@
-{% extends "base.html" %} 
-{% load static %} 
+{% extends "base.html" %}
+{% load static %}
 <!-- blok judul halaman -->
-{% block title %}Tagihan{% endblock %} 
+{% block title %} Pelanggan {% endblock %}
 <!-- blok css tambahan -->
 {% block extra_css %}
-{% endblock %} 
+{% endblock %}
 
 <!-- ///////////////////////////////////////////////////////////////////////// -->
 <!-- blok konten utama -->
 {% block main %}
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Data Tagihan</h1>
+    <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Data Pembayaran</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
             <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
                 <i class="bi bi-calendar me-1"></i>
@@ -96,27 +97,20 @@
                     <form method="GET" class="mb-3">
                         <div class="row g-2">
                             <div class="col-md-4">
-                                <input type="text" name="q" class="form-control" placeholder="Cari nama atau username PPPoE..." value="{{ query|default:'' }}">
+                                <input type="text" name="q" class="form-control"
+                                    placeholder="Cari nama pelanggan..." value="{{ query|default:'' }}">
                             </div>
                             <div class="col-md-3">
-                                <select name="status" class="form-select">
-                                    <option value="">Semua Status</option>
-                                    <option value="lunas" {% if status_filter == 'lunas' %}selected{% endif %}>Lunas</option>
-                                    <option value="belum_lunas" {% if status_filter == 'belum_lunas' %}selected{% endif %}>Belum Lunas</option>
-                                    <option value="tertunggak" {% if status_filter == 'tertunggak' %}selected{% endif %}>Tertunggak</option>
+                                <select name="metode" class="form-select">
+                                    <option value="">Semua Metode</option>
+                                    <option value="tunai" {% if metode_filter == "tunai" %}selected{% endif %}>Tunai</option>
+                                    <option value="transfer_bank" {% if metode_filter == "transfer_bank" %}selected{% endif %}>Transfer Bank</option>
+                                    <option value="ewallet" {% if metode_filter == "ewallet" %}selected{% endif %}>E-Wallet</option>
+                                    <option value="kartu_kredit" {% if metode_filter == "kartu_kredit" %}selected{% endif %}>Kartu Kredit</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <select name="bulan" class="form-select">
-                                    <option value="">Semua Bulan</option>
-                                    {% for bulan in bulan_choices %}
-                                        {% with val=bulan|date:"Y-m" %}
-                                            <option value="{{ val }}" {% if bulan_filter == val %}selected{% endif %}>
-                                                {{ bulan|date:"F Y" }}
-                                            </option>
-                                        {% endwith %}
-                                    {% endfor %}
-                                </select>
+                                <input type="date" name="tanggal" class="form-control" value="{{ tanggal_filter|default:'' }}">
                             </div>
                             <div class="col-md-2">
                                 <button type="submit" class="btn btn-primary w-100">Filter</button>
@@ -125,62 +119,73 @@
                     </form>
 
                     <div class="table-responsive">
-                        <table class="table table-hover table-sm">
+                        <table class="table table-hover table-sm align-middle">
                             <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Nama Pelanggan</th>
-                                    <th>Periode</th>
-                                    <th>Tanggal Tagihan</th>
-                                    <th>Jatuh Tempo</th>
+                                    <th>Pelanggan</th>
                                     <th>Jumlah</th>
-                                    <th>Terbayar</th>
+                                    <th>Metode</th>
+                                    <th>Tanggal</th>
+                                    <th>Periode</th>
                                     <th>Status</th>
+                                    <th>Bukti</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for tagihan in tagihan_list %}
-                                    <tr>
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ tagihan.pelanggan.nama }}</td>
-                                        <td>{{ tagihan.periode_bulan|date:"F Y" }}</td>
-                                        <td>{{ tagihan.tanggal_tagihan|date:"d M Y" }}</td>
-                                        <td>{{ tagihan.tanggal_jatuh_tempo|date:"d M Y" }}</td>
-                                        <td>Rp {{ tagihan.jumlah_tagihan|floatformat:0}}</td>
-                                        <td>Rp {{ tagihan.jumlah_terbayar|floatformat:0}}</td>
-                                        <td>
-                                            {% if tagihan.status == 'lunas' %}
-                                                <span class="badge badge-bg aktif">Lunas</span>
-                                            {% elif tagihan.status == 'belum_lunas' %}
-                                                <span class="badge badge-bg tidak-aktif">Belum Lunas</span>
-                                            {% elif tagihan.status == 'tertunggak' %}
-                                                <span class="badge badge-bg suspend">Tertunggak</span>     
-                                            {% else %}
-                                                <span class="badge badge-bg">{{ pelanggan.status }}</span>                                         
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></button>
-                                            <button class="btn btn-sm btn-outline-success"><i class="bi bi-currency-dollar"></i></button>
-                                        </td>
-                                    </tr>
+                                {% for pembayaran in pembayaran_list %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><a href="{% url 'tagihan_app:tagihan_list'%}" style="color: rgb(22, 70, 214); font-weight: 500; text-decoration: none;">{{ pembayaran.pelanggan.nama }}</a></td>
+                                    <td>Rp {{ pembayaran.jumlah_pembayaran|floatformat:0 }}</td>
+                                    <td>{{ pembayaran.get_metode_pembayaran_display }}</td>
+                                    <td>{{ pembayaran.tanggal_pembayaran|date:"d M Y" }}</td>
+                                    <td>{{pembayaran.tagihan.periode_bulan}}</td>
+                                    <td>
+                                        {% if pembayaran.tagihan.status == 'lunas' %}
+                                            <span class="badge badge-bg aktif">Lunas</span>
+                                        {% elif pembayaran.tagihan.status == 'belum_lunas' %}
+                                            <span class="badge badge-bg tidak-aktif">Belum Lunas</span>
+                                        {% elif pembayaran.tagihan.status == 'tertunggak' %}
+                                            <span class="badge badge-bg suspend">Tertunggak</span>     
+                                        {% else %}
+                                            <span class="badge badge-bg">{{ pelanggan.status }}</span>                                         
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if pembayaran.bukti_pembayaran %}
+                                            <a href="{{ pembayaran.bukti_pembayaran.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-currency-dollar"></i>
+                                        </a>
+                                    </td>
+                                </tr>
                                 {% empty %}
-                                    <tr>
-                                        <td colspan="7" class="text-center">Tidak ada data tagihan.</td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="8" class="text-center">Tidak ada data pembayaran ditemukan.</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- pagination -->
+                    <!-- Pagination -->
                     {% if page_obj.has_other_pages %}
                     <nav aria-label="Page navigation" class="mt-3">
                         <ul class="pagination justify-content-center">
                             {% if page_obj.has_previous %}
                             <li class="page-item">
-                                <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if lokasi_filter %}lokasi={{ lokasi_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                <a class="page-link"
+                                    href="?{% if query %}q={{ query }}&{% endif %}{% if metode_filter %}metode={{ metode_filter }}&{% endif %}{% if tanggal_filter %}tanggal={{ tanggal_filter }}&{% endif %}page={{ page_obj.previous_page_number }}"
+                                    aria-label="Previous">
                                     <span aria-hidden="true">&laquo;</span>
                                 </a>
                             </li>
@@ -190,17 +195,20 @@
 
                             {% for num in page_obj.paginator.page_range %}
                                 {% if page_obj.number == num %}
-                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if lokasi_filter %}lokasi={{ lokasi_filter }}&{% endif %}page={{ num }}">{{ num }}</a>
-                                    </li>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?{% if query %}q={{ query }}&{% endif %}{% if metode_filter %}metode={{ metode_filter }}&{% endif %}{% if tanggal_filter %}tanggal={{ tanggal_filter }}&{% endif %}page={{ num }}">{{ num }}</a>
+                                </li>
                                 {% endif %}
                             {% endfor %}
 
                             {% if page_obj.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="?{% if query %}q={{ query }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}{% if lokasi_filter %}lokasi={{ lokasi_filter }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">
+                                <a class="page-link"
+                                    href="?{% if query %}q={{ query }}&{% endif %}{% if metode_filter %}metode={{ metode_filter }}&{% endif %}{% if tanggal_filter %}tanggal={{ tanggal_filter }}&{% endif %}page={{ page_obj.next_page_number }}"
+                                    aria-label="Next">
                                     <span aria-hidden="true">&raquo;</span>
                                 </a>
                             </li>
@@ -210,16 +218,16 @@
                         </ul>
                     </nav>
                     {% endif %}
+
                 </div>
             </div>
-        </div>                    
+        </div>
     </div>
 </main>
-{% endblock %} 
+{% endblock %}
 <!-- ///////////////////////////////////////////////////////////////////////// -->
 
 <!-- blok javascrip tambahan-->
 {% block script %}
 
 {% endblock %}
-

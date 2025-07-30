@@ -143,6 +143,33 @@ def pelanggan_detail(request, pk):
     
     return render(request, 'pelanggan/detail.html', context)
 
+# PAKET ///////////////////////////////////////////////////////////////////////////
+@login_required
+def paket_list(request):
+    """View untuk halaman daftar paket"""
+    paket_list = Paket.objects.all()
+    
+    context = {
+        'paket_list': paket_list,
+    }
+    
+    return render(request, 'paket/list.html', context)
+
+@login_required
+def paket_detail(request, pk):
+    """View untuk halaman detail paket"""
+    paket = get_object_or_404(Paket, pk=pk)
+    
+    # Ambil pelanggan yang menggunakan paket ini
+    pelanggan_list = paket.pelanggan_set.all()
+    
+    context = {
+        'paket': paket,
+        'pelanggan_list': pelanggan_list,
+    }
+    
+    return render(request, 'paket/detail.html', context)
+
 # TAGIHAN //////////////////////////////////////////////////////////////////////////
 @login_required
 def tagihan_list(request):
@@ -184,43 +211,35 @@ def tagihan_list(request):
 
 # PEMBAYARAN ///////////////////////////////////////////////////////////////////////
 @login_required
-def daftar_pembayaran(request):
-    """View untuk halaman daftar pembayaran"""
-    # Filter dan pencarian bisa ditambahkan sesuai kebutuhan
-    pembayaran_list = Pembayaran.objects.select_related('tagihan__pelanggan').order_by('-tanggal_pembayaran')
-    
-    context = {
-        'pembayaran_list': pembayaran_list,
-    }
-    
-    return render(request, 'daftar_pembayaran.html', context)
+def pembayaran_list(request):
+    query = request.GET.get('q')
+    metode_filter = request.GET.get('metode')
+    tanggal_filter = request.GET.get('tanggal')
 
-# PAKET ///////////////////////////////////////////////////////////////////////////
-@login_required
-def paket_list(request):
-    """View untuk halaman daftar paket"""
-    paket_list = Paket.objects.all()
-    
-    context = {
-        'paket_list': paket_list,
-    }
-    
-    return render(request, 'paket/list.html', context)
+    pembayaran_list = Pembayaran.objects.select_related('pelanggan', 'tagihan').all()
 
-@login_required
-def paket_detail(request, pk):
-    """View untuk halaman detail paket"""
-    paket = get_object_or_404(Paket, pk=pk)
-    
-    # Ambil pelanggan yang menggunakan paket ini
-    pelanggan_list = paket.pelanggan_set.all()
-    
+    if query:
+        pembayaran_list = pembayaran_list.filter(pelanggan__nama__icontains=query)
+
+    if metode_filter:
+        pembayaran_list = pembayaran_list.filter(metode_pembayaran=metode_filter)
+
+    if tanggal_filter:
+        pembayaran_list = pembayaran_list.filter(tanggal_pembayaran__date=tanggal_filter)
+
+    paginator = Paginator(pembayaran_list, 10)
+    page = request.GET.get('page')
+    page_obj = paginator.get_page(page)
+
     context = {
-        'paket': paket,
-        'pelanggan_list': pelanggan_list,
+        'pembayaran_list': page_obj,
+        'page_obj': page_obj,
+        'query': query,
+        'metode_filter': metode_filter,
+        'tanggal_filter': tanggal_filter,
     }
-    
-    return render(request, 'paket/detail.html', context)
+
+    return render(request, 'pembayaran/list.html', context)
 
 # API Views untuk Chart.js (opsional, jika menggunakan AJAX)
 @login_required

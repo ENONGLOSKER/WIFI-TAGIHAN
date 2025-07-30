@@ -65,13 +65,15 @@ class Tagihan(models.Model):
     """Model untuk tagihan bulanan pelanggan"""
     pelanggan = models.ForeignKey(Pelanggan, on_delete=models.CASCADE)
     tanggal_tagihan = models.DateField(default=timezone.now)
-    periode_bulan = models.DateField()  # Misalnya: 2024-09-01 untuk bulan September 2024
+    periode_bulan = models.DateField() 
     jumlah_tagihan = models.DecimalField(max_digits=10, decimal_places=2)
+    jumlah_terbayar = models.DecimalField(max_digits=10, decimal_places=2, default=0) # Tambahkan ini
     tanggal_jatuh_tempo = models.DateField()
     
     STATUS_TAGIHAN_CHOICES = [
         ('lunas', 'Lunas'),
         ('belum_lunas', 'Belum Lunas'),
+        ('sebagian_terbayar', 'Sebagian Terbayar'), # Tambahkan ini
         ('tertunggak', 'Tertunggak'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_TAGIHAN_CHOICES, default='belum_lunas')
@@ -81,11 +83,19 @@ class Tagihan(models.Model):
 
 class Pembayaran(models.Model):
     """Model untuk pencatatan pembayaran"""
-    tagihan = models.ForeignKey(Tagihan, on_delete=models.CASCADE)
+    tagihan = models.ForeignKey(Tagihan, on_delete=models.CASCADE, null=True, blank=True) # Bisa null jika pembayaran di muka/deposit
+    pelanggan = models.ForeignKey(Pelanggan, on_delete=models.CASCADE)
     tanggal_pembayaran = models.DateTimeField(default=timezone.now)
     jumlah_pembayaran = models.DecimalField(max_digits=10, decimal_places=2)
-    metode_pembayaran = models.CharField(max_length=50)  # Tunai, Transfer, dll.
+    metode_pembayaran_choices = [
+        ('tunai', 'Tunai'),
+        ('transfer_bank', 'Transfer Bank'),
+        ('ewallet', 'E-Wallet'),
+        ('kartu_kredit', 'Kartu Kredit'),
+    ]
+    metode_pembayaran = models.CharField(max_length=50, choices=metode_pembayaran_choices)
     keterangan = models.TextField(blank=True, null=True)
+    bukti_pembayaran = models.ImageField(upload_to='bukti_pembayaran/', null=True, blank=True) # untuk bukti fisik
     
     def __str__(self):
-        return f"Pembayaran {self.tagihan} - {self.tanggal_pembayaran.strftime('%d-%m-%Y')}"
+        return f"Pembayaran {self.pelanggan.nama} - {self.tanggal_pembayaran.strftime('%d-%m-%Y')} - Rp {self.jumlah_pembayaran}"
