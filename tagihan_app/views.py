@@ -7,8 +7,47 @@ from datetime import datetime
 from .models import Pelanggan, Tagihan, Pembayaran, Lokasi, Paket
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models.functions import TruncDay,TruncMonth,TruncYear
+
+def total_pendapatan():
+    per_hari = Pembayaran.objects.annotate(hari=TruncDay('tanggal_pembayaran')).values('hari').annotate(total=Sum('jumlah_pembayaran'))
+    per_bulan = Pembayaran.objects.annotate(bulan=TruncMonth('tanggal_pembayaran')).values('bulan').annotate(total=Sum('jumlah_pembayaran'))
+    per_tahun = Pembayaran.objects.annotate(tahun=TruncYear('tanggal_pembayaran')).values('tahun').annotate(total=Sum('jumlah_pembayaran'))
+    return {
+        'per_hari': per_hari,
+        'per_bulan': per_bulan,
+        'per_tahun': per_tahun
+    }
+
 
 def index(request):
+    total_hari = 0
+    for hari in total_pendapatan()['per_hari']:
+        print(f"hari {hari['hari']} = Rp {hari['total']}")
+        total_hari += hari['total']
+
+    print(f"Total pendapatan hari ini: Rp {total_hari}")
+    print('--------------------------------------------')
+
+    total_bulan = 0
+    for bulan in total_pendapatan()['per_bulan']:
+        print(f"Bulan {bulan['bulan']} = Rp {bulan['total']}")
+        total_bulan += bulan['total']
+    print(f"Total pendapatan bulan ini: Rp {total_bulan}")
+    print('--------------------------------------------')
+
+    total_tahun = 0
+    for tahun in total_pendapatan()['per_tahun']:
+        print(f"Tahun {tahun['tahun']} = Rp {tahun['total']}")
+        total_tahun += tahun['total']
+    print(f"Total pendapatan tahun ini: Rp {total_tahun}")
+    print('--------------------------------------------')
+
+
+        
+
+    
+
     return render(request,'index.html')
 
 @login_required
@@ -177,7 +216,7 @@ def tagihan_list(request):
     status_filter = request.GET.get('status')
     bulan_filter = request.GET.get('bulan')
     
-    tagihan_list = Tagihan.objects.all().order_by('-periode_bulan', '-tanggal_tagihan')
+    tagihan_list = Tagihan.objects.all().order_by('status', '-periode_bulan')
     
     if status_filter:
         tagihan_list = tagihan_list.filter(status=status_filter)

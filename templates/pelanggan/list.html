@@ -143,7 +143,7 @@
                                 {% for pelanggan in pelanggan_list %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
-                                    <td>{{ pelanggan.nama }}</td>
+                                    <td><a href="{% url 'tagihan_app:pelanggan_detail' pelanggan.id%}" style="font-weight: 600; text-decoration: none; color: rgb(0, 115, 255);">{{ pelanggan.nama }}</a></td>
                                     <td>{{ pelanggan.alamat}}</td>
                                     <td>{{ pelanggan.kontak }}</td>
                                     <td>{{ pelanggan.lokasi }}</td>
