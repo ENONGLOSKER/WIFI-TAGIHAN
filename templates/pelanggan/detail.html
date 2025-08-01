@@ -22,16 +22,16 @@
                 <!-- Summary Cards -->
                 <div class="row mb-4 g-3">
                     <div class="col-md-6 col-lg-3">
-                        <div class="card summary-card h-100">
+                        <div class="card summary-card h-100" style="background-color: black; color: white;">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center" >
                                     <div>
-                                        <h6 class="card-title text-muted">Pendapatan Bulan Ini</h6>
+                                        <h6 class="card-title ">Total Pembayaran</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">Rp 6,200,000</h4>
-                                        <small class="text-muted">Total Tagihan: Rp 8,310,000</small>
+                                        <h4 class="card-text">Rp {{ total_pembayaran|floatformat:0 }}</h4>
+                                        <small class="">Sisa Tagihan : Rp {{total_belum_lunas}}</small>
                                     </div>
-                                    <i class="bi bi-currency-dollar fs-1 text-muted"></i>
+                                    <i class="bi bi-currency-dollar fs-1 "></i>
                                 </div>
                             </div>
                         </div>
@@ -41,10 +41,10 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title text-muted">Aktif</h6>
+                                        <h6 class="card-title text-muted">Total Tagihan</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">120</h4>
-                                        <small class="text-muted">Sudah bayar</small>
+                                        <h4 class="card-text">Rp {{ total_tagihan|floatformat:0 }}</h4>
+                                        <small class="text-muted">Lunas, Belum Lunas & Tertunggak : {{jumlah_tagihan}} orang</small>
                                     </div>
                                     <i class="bi bi-check-circle fs-1 text-muted"></i>
                                 </div>
@@ -56,10 +56,10 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title text-muted">Belum Lunas</h6>
+                                        <h6 class="card-title text-muted">Total Lunas</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">45</h4>
-                                        <small class="text-muted">Perlu penagihan</small>
+                                        <h4 class="card-text">Rp {{ total_terbayar|floatformat:0 }}</h4>
+                                        <small class="text-muted">Tagihan Terbayar : {{jumlah_pembayaran}} orang</small>
                                     </div>
                                     <i class="bi bi-exclamation-triangle fs-1 text-muted"></i>
                                 </div>
@@ -71,10 +71,11 @@
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="card-title text-muted">Suspend</h6>
+                                        <h6 class="card-title text-muted">Belum Lunas</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">25</h4>
-                                        <small class="text-muted">Akses ditutup</small>
+                                        <h4 class="card-text">Rp {{ total_belum_lunas|floatformat:0 }}</h4>
+                                        <small class="text-muted">Tagihan belum lunas: {{jumlah_belum_lunas}} orang</small>
+                                        
                                     </div>
                                     <i class="bi bi-pause-circle fs-1 text-muted"></i>
                                 </div>
@@ -162,6 +163,66 @@
                                         <p><strong>Tanggal Bergabung:</strong> {{ pelanggan.tanggal_bergabung|date:"d M Y" }}</p>
                                         <p><strong>Catatan:</strong> {{ pelanggan.catatan|default:"-" }}</p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Riwayat Pembayaran -->
+                <div class="row mb-4 g-3">
+                    <div class="col-md-12 col-lg-12">
+                        <div class="card shadow-sm">
+                            <div class="card-header">
+                                Riwayat Pembayaran
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Periode</th>
+                                                <th>Tanggal Pembayaran</th>
+                                                <th>Jumlah Pembayaran</th>
+                                                <th>Metode</th>
+                                                <th>Status</th>
+                                                <th>Bukti</th>
+                                                <th>Tanggal Tagihan</th>
+                                                <th>Jumlah Tagihan</th>
+                                                <th>Jatuh Tempo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for pembyaran in pembayaran_list %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ pembyaran.tagihan.periode_bulan|date:"F Y" }}</td>
+                                                <td>{{ pembyaran.tanggal_pembayaran|date:"d M Y" }}</td>
+                                                <td>{{ pembyaran.jumlah_pembayaran }}</td>                                                
+                                                <td>{{ pembyaran.metode_pembayaran }}</td>
+                                                <td>
+                                                    {% if pembyaran.tagihan.status == 'lunas' %}
+                                                        <span class="badge badge-bg aktif">Lunas</span>
+                                                    {% elif pembyaran.tagihan.status == 'belum_lunas' %}
+                                                        <span class="badge badge-bg tidak-aktif">Belum Lunas</span>
+                                                    {% elif pembyaran.tagihan.status == 'tertunggak' %}
+                                                        <span class="badge badge-bg suspend">Tertunggak</span>     
+                                                    {% else %}
+                                                        <span class="badge badge-bg">{{ pembayaran.tagihan.status }}</span>                                         
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ pembyaran.bukti_pembayaran }}</td>
+                                                <td>{{ pembyaran.tagihan.tanggal_tagihan }}</td>
+                                                <td>{{ pembyaran.tagihan.jumlah_tagihan }}</td>
+                                                <td>{{ pembyaran.tagihan.tanggal_jatuh_tempo }}</td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="6" class="text-center">Tidak ada data tagihan.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>

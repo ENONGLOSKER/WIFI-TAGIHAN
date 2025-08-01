@@ -39,7 +39,7 @@ class Pelanggan(models.Model):
     
     STATUS_CHOICES = [
         ('aktif', 'Aktif'),
-        ('belum_lunas', 'Belum Lunas'),
+        ('tidak_aktif', 'Tidak Aktif'),
         ('suspend', 'Suspend'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='aktif')

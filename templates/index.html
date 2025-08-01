@@ -362,8 +362,8 @@
                     </li> -->
                 </ul>
                 <div class="d-flex align-items-center">
-                    <a href="#" class="btn btn-link text-decoration-none text-dark me-3 fw-medium">Sign in</a>
-                    <a href="#" class="btn btn-dark px-4 py-2 fw-medium">Dashboard</a>
+                    <a href="{% url 'tagihan_app:login'%}" class="btn btn-link text-decoration-none text-dark me-3 fw-medium">Sign in</a>
+                    <a href="{% url 'tagihan_app:dashboard' %}" target="_blank" class="btn btn-dark px-4 py-2 fw-medium">Dashboard</a>
                 </div>
             </div>
         </div>
@@ -414,8 +414,24 @@
             </div>
         </div>
     </section>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-success py-2" id="auto-alert-{{ forloop.counter }}" role="alert" style="position: absolute; top: 120px; right: 20px; z-index: 999;">
+            {{ message }} !
+        </div>
+        <script>
+            setTimeout(function() {
+                var alertBox = document.getElementById('auto-alert-{{ forloop.counter }}');
+                if (alertBox) {
+                alertBox.style.display = 'none';
+                }
+            }, 2000);
+        </script>
+      {% endfor %}
+  {% endif %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
 </body>
 
 </html>

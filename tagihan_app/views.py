@@ -1,79 +1,46 @@
-# views.py
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
-from django.db.models import Sum, Count, Q
+from re import S
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from typing import Dict, List, Optional
+from uuid import UUID
+from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import Sum, Q, Count
 from django.utils import timezone
 from datetime import datetime
-from .models import Pelanggan, Tagihan, Pembayaran, Lokasi, Paket
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models.functions import TruncDay,TruncMonth,TruncYear
+from .models import Tagihan, Pembayaran, Pelanggan, Paket, Lokasi
 
-def total_pendapatan():
-    per_hari = Pembayaran.objects.annotate(hari=TruncDay('tanggal_pembayaran')).values('hari').annotate(total=Sum('jumlah_pembayaran'))
-    per_bulan = Pembayaran.objects.annotate(bulan=TruncMonth('tanggal_pembayaran')).values('bulan').annotate(total=Sum('jumlah_pembayaran'))
-    per_tahun = Pembayaran.objects.annotate(tahun=TruncYear('tanggal_pembayaran')).values('tahun').annotate(total=Sum('jumlah_pembayaran'))
+# Constants
+ITEMS_PER_PAGE = 10
+RECENT_CUSTOMERS_LIMIT = 10
+MONTHS_FOR_REPORT = 6
+
+def calculate_summary_stats() -> Dict[str, float]:
+    """Calculate summary statistics for billing and payments."""
+    tagihan_agg = Tagihan.objects.aggregate(
+        total_tagihan=Sum('jumlah_tagihan'),
+        total_terbayar=Sum('jumlah_terbayar')
+    )
+    total_pembayaran = Pembayaran.objects.aggregate(total=Sum('jumlah_pembayaran'))['total'] or 0
+    
     return {
-        'per_hari': per_hari,
-        'per_bulan': per_bulan,
-        'per_tahun': per_tahun
+        'total_tagihan': tagihan_agg['total_tagihan'] or 0,
+        'total_terbayar': tagihan_agg['total_terbayar'] or 0,
+        'total_belum_lunas': tagihan_agg['total_tagihan'] - tagihan_agg['total_terbayar'] if tagihan_agg['total_tagihan'] else 0,
+        'total_pembayaran': total_pembayaran,
+        'jumlah_tagihan': Tagihan.objects.count(),
+        'jumlah_pembayaran': Pembayaran.objects.count(),
+        'jumlah_belum_lunas': Tagihan.objects.filter(status='belum_lunas').count(),
     }
 
-
-def index(request):
-    total_hari = 0
-    for hari in total_pendapatan()['per_hari']:
-        print(f"hari {hari['hari']} = Rp {hari['total']}")
-        total_hari += hari['total']
-
-    print(f"Total pendapatan hari ini: Rp {total_hari}")
-    print('--------------------------------------------')
-
-    total_bulan = 0
-    for bulan in total_pendapatan()['per_bulan']:
-        print(f"Bulan {bulan['bulan']} = Rp {bulan['total']}")
-        total_bulan += bulan['total']
-    print(f"Total pendapatan bulan ini: Rp {total_bulan}")
-    print('--------------------------------------------')
-
-    total_tahun = 0
-    for tahun in total_pendapatan()['per_tahun']:
-        print(f"Tahun {tahun['tahun']} = Rp {tahun['total']}")
-        total_tahun += tahun['total']
-    print(f"Total pendapatan tahun ini: Rp {total_tahun}")
-    print('--------------------------------------------')
-
-
-        
-
-    
-
-    return render(request,'index.html')
-
-@login_required
-def dashboard(request):
-    """View untuk halaman dashboard"""
-    # Data ringkasan
-    total_pendapatan_bulan_ini = Tagihan.objects.filter(
-        periode_bulan__month=timezone.now().month,
-        periode_bulan__year=timezone.now().year,
-        status='lunas'
-    ).aggregate(Sum('jumlah_tagihan'))['jumlah_tagihan__sum'] or 0
-    
-    total_tagihan_bulan_ini = Tagihan.objects.filter(
-        periode_bulan__month=timezone.now().month,
-        periode_bulan__year=timezone.now().year
-    ).aggregate(Sum('jumlah_tagihan'))['jumlah_tagihan__sum'] or 0
-    
-    pelanggan_aktif = Pelanggan.objects.filter(status='aktif').count()
-    pelanggan_belum_lunas = Pelanggan.objects.filter(status='belum_lunas').count()
-    pelanggan_suspend = Pelanggan.objects.filter(status='suspend').count()
-    
-    # Data untuk grafik pendapatan per bulan (contoh 6 bulan terakhir)
+def get_monthly_revenue_data(months: int = MONTHS_FOR_REPORT) -> tuple[List[float], List[str]]:
+    """Get revenue data for the last specified months."""
     pendapatan_per_bulan = []
     labels_bulan = []
-    for i in range(5, -1, -1):  # 6 bulan terakhir
-        bulan = timezone.now().replace(day=1) - timezone.timedelta(days=30*i)
+    
+    for i in range(months - 1, -1, -1):
+        bulan = timezone.now().replace(day=1) - timezone.timedelta(days=30 * i)
         total = Tagihan.objects.filter(
             periode_bulan__month=bulan.month,
             periode_bulan__year=bulan.year,
@@ -83,56 +50,99 @@ def dashboard(request):
         pendapatan_per_bulan.append(float(total))
         labels_bulan.append(bulan.strftime('%b %Y'))
     
-    # Data untuk grafik pendapatan per lokasi
+    return pendapatan_per_bulan, labels_bulan
+
+def get_location_revenue_data() -> tuple[List[float], List[str]]:
+    """Get revenue data by location."""
     pendapatan_per_lokasi = []
     labels_lokasi = []
+    
     for lokasi in Lokasi.objects.all():
-        total_lokasi = Tagihan.objects.filter(
+        total = Tagihan.objects.filter(
             pelanggan__lokasi=lokasi,
             status='lunas'
         ).aggregate(Sum('jumlah_tagihan'))['jumlah_tagihan__sum'] or 0
         
-        if total_lokasi > 0:  # Hanya tampilkan lokasi dengan pendapatan
-            pendapatan_per_lokasi.append(float(total_lokasi))
+        if total > 0:
+            pendapatan_per_lokasi.append(float(total))
             labels_lokasi.append(lokasi.nama)
     
-    # Data untuk grafik status pelanggan
-    status_counts = [
-        Pelanggan.objects.filter(status='aktif').count(),
-        Pelanggan.objects.filter(status='belum_lunas').count(),
-        Pelanggan.objects.filter(status='suspend').count(),
-    ]
+    return pendapatan_per_lokasi, labels_lokasi
+
+def index(request):
+    """Render the index page."""
+    return render(request, 'index.html')
+
+def login_view(request):
+    """Handle user login."""
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        
+        if not username or not password:
+            messages.error(request, 'Username dan password harus diisi.')
+            return render(request, 'auth/login.html')
+            
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            messages.success(request, 'Login berhasil!')
+            return redirect('tagihan_app:dashboard')
+            
+        messages.error(request, 'Username atau password salah.')
     
-    # Data tabel pelanggan terbaru/belum lunas
-    pelanggan_list = Pelanggan.objects.filter(
-        Q(status='belum_lunas') | Q(status='suspend')
-    ).order_by('-id')[:10] # 10 terbaru
+    return render(request, 'auth/login.html')
+
+def logout_view(request):
+    """Handle user logout."""
+    if request.user.is_authenticated:
+        logout(request)
+        messages.success(request, 'Logout berhasil.')
+    return redirect('tagihan_app:index')
+
+@login_required
+def dashboard(request):
+    """Render the dashboard with summary statistics."""
+    current_month = timezone.now().month
+    current_year = timezone.now().year
     
     context = {
-        'total_pendapatan_bulan_ini': total_pendapatan_bulan_ini,
-        'total_tagihan_bulan_ini': total_tagihan_bulan_ini,
-        'pelanggan_aktif': pelanggan_aktif,
-        'pelanggan_belum_lunas': pelanggan_belum_lunas,
-        'pelanggan_suspend': pelanggan_suspend,
-        'pendapatan_per_bulan': pendapatan_per_bulan,
-        'labels_bulan': labels_bulan,
-        'pendapatan_per_lokasi': pendapatan_per_lokasi,
-        'labels_lokasi': labels_lokasi,
-        'status_counts': status_counts,
-        'pelanggan_list': pelanggan_list,
+        'total_pendapatan_bulan_ini': Tagihan.objects.filter(
+            periode_bulan__month=current_month,
+            periode_bulan__year=current_year,
+            status='lunas'
+        ).aggregate(Sum('jumlah_tagihan'))['jumlah_tagihan__sum'] or 0,
+        'total_tagihan_bulan_ini': Tagihan.objects.filter(
+            periode_bulan__month=current_month,
+            periode_bulan__year=current_year
+        ).aggregate(Sum('jumlah_tagihan'))['jumlah_tagihan__sum'] or 0,
+        'pelanggan_aktif': Pelanggan.objects.filter(status='aktif').count(),
+        'pelanggan_belum_lunas': Pelanggan.objects.filter(status='belum_lunas').count(),
+        'pelanggan_suspend': Pelanggan.objects.filter(status='suspend').count(),
+        'pendapatan_per_bulan': get_monthly_revenue_data()[0],
+        'labels_bulan': get_monthly_revenue_data()[1],
+        'pendapatan_per_lokasi': get_location_revenue_data()[0],
+        'labels_lokasi': get_location_revenue_data()[1],
+        'status_counts': [
+            Pelanggan.objects.filter(status='aktif').count(),
+            Pelanggan.objects.filter(status='belum_lunas').count(),
+            Pelanggan.objects.filter(status='suspend').count(),
+        ],
+        'pelanggan_list': Pelanggan.objects.filter(
+            Q(status='belum_lunas') | Q(status='suspend')
+        ).order_by('-id')[:RECENT_CUSTOMERS_LIMIT]
     }
     
     return render(request, 'dashboard.html', context)
 
-# PELANGGAN /////////////////////////////////////////////////////////////////////////
 @login_required
 def pelanggan_list(request):
-    """View untuk halaman daftar pelanggan"""
-    query = request.GET.get('q')
-    status_filter = request.GET.get('status')
-    lokasi_filter = request.GET.get('lokasi')
+    """Render the customer list with filtering and pagination."""
+    pelanggan_list = Pelanggan.objects.select_related('lokasi').all()
     
-    pelanggan_list = Pelanggan.objects.all()
+    query = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '')
+    lokasi_filter = request.GET.get('lokasi', '')
     
     if query:
         pelanggan_list = pelanggan_list.filter(
@@ -146,77 +156,63 @@ def pelanggan_list(request):
     if lokasi_filter:
         pelanggan_list = pelanggan_list.filter(lokasi__id=lokasi_filter)
     
-    # Untuk filter dropdown
-    lokasi_choices = Lokasi.objects.all()
+    paginator = Paginator(pelanggan_list, ITEMS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
 
-    # untuk pagination
-    paginator = Paginator(pelanggan_list, 10)  # 10 item per halaman
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    lokasi_choices = Lokasi.objects.all()
-
-    
+    sumary_states = calculate_summary_stats()
     
     context = {
-        'pelanggan_list': page_obj,  # gunakannya untuk looping
-        'page_obj': page_obj, # untuk pagination
-        'lokasi_choices': lokasi_choices,
+        'pelanggan_list': page_obj,
+        'page_obj': page_obj,
+        'lokasi_choices': Lokasi.objects.all(),
         'query': query,
         'status_filter': status_filter,
         'lokasi_filter': lokasi_filter,
+        **sumary_states,
     }
     
     return render(request, 'pelanggan/list.html', context)
 
 @login_required
-def pelanggan_detail(request, pk):
-    """View untuk halaman detail pelanggan"""
-    pelanggan = get_object_or_404(Pelanggan, pk=pk)
-    tagihan_list = Tagihan.objects.filter(pelanggan=pelanggan).order_by('-periode_bulan')
+def pelanggan_detail(request, pk: UUID):
+    """Render customer detail page."""
+    pelanggan = get_object_or_404(Pelanggan.objects.select_related('lokasi', 'paket'), pk=pk)
+    sumary_stats = calculate_summary_stats()
     
     context = {
         'pelanggan': pelanggan,
-        'tagihan_list': tagihan_list,
+        'tagihan_list': Tagihan.objects.filter(pelanggan=pelanggan).order_by('-periode_bulan'),
+        'pembayaran_list': Pembayaran.objects.filter(tagihan__pelanggan=pelanggan).order_by('-tanggal_pembayaran'),
+        **sumary_stats,
     }
     
     return render(request, 'pelanggan/detail.html', context)
 
-# PAKET ///////////////////////////////////////////////////////////////////////////
 @login_required
 def paket_list(request):
-    """View untuk halaman daftar paket"""
-    paket_list = Paket.objects.all()
-    
+    """Render package list page."""
     context = {
-        'paket_list': paket_list,
+        'paket_list': Paket.objects.all(),
     }
-    
     return render(request, 'paket/list.html', context)
 
 @login_required
-def paket_detail(request, pk):
-    """View untuk halaman detail paket"""
+def paket_detail(request, pk: UUID):
+    """Render package detail page."""
     paket = get_object_or_404(Paket, pk=pk)
-    
-    # Ambil pelanggan yang menggunakan paket ini
-    pelanggan_list = paket.pelanggan_set.all()
-    
     context = {
         'paket': paket,
-        'pelanggan_list': pelanggan_list,
+        'pelanggan_list': paket.pelanggan_set.select_related('lokasi').all(),
     }
-    
     return render(request, 'paket/detail.html', context)
 
-# TAGIHAN //////////////////////////////////////////////////////////////////////////
 @login_required
 def tagihan_list(request):
-    """View untuk halaman daftar tagihan"""
-    status_filter = request.GET.get('status')
-    bulan_filter = request.GET.get('bulan')
+    """Render billing list with filtering and pagination."""
+    tagihan_list = Tagihan.objects.select_related('pelanggan__paket', 'pelanggan__lokasi').order_by('status', '-periode_bulan')
     
-    tagihan_list = Tagihan.objects.all().order_by('status', '-periode_bulan')
+    status_filter = request.GET.get('status', '')
+    bulan_filter = request.GET.get('bulan', '')
     
     if status_filter:
         tagihan_list = tagihan_list.filter(status=status_filter)
@@ -229,109 +225,78 @@ def tagihan_list(request):
                 periode_bulan__month=bulan
             )
         except ValueError:
-            pass  # Abaikan filter jika format salah
+            messages.error(request, 'Format bulan tidak valid.')
     
-    # Untuk filter dropdown
-    bulan_choices = Tagihan.objects.dates('periode_bulan', 'month', order='DESC')
+    paginator = Paginator(tagihan_list, ITEMS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
 
-    paginator = Paginator(tagihan_list, 10)  # 10 per halaman
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    summary_stats = calculate_summary_stats()
     
     context = {
         'tagihan_list': page_obj,
         'page_obj': page_obj,
-        'bulan_choices': bulan_choices,
+        'bulan_choices': Tagihan.objects.dates('periode_bulan', 'month', order='DESC'),
         'status_filter': status_filter,
         'bulan_filter': bulan_filter,
+        **summary_stats,
     }
     
     return render(request, 'tagihan/list.html', context)
 
-# PEMBAYARAN ///////////////////////////////////////////////////////////////////////
+@login_required
+def tagihan_detail(request, pk: UUID):
+    """Render billing detail page."""
+    tagihan = get_object_or_404(
+        Tagihan.objects.select_related('pelanggan__paket', 'pelanggan__lokasi'),
+        pk=pk
+    )
+    summary_stats = calculate_summary_stats()
+    context = {
+        'tagihan': tagihan,
+        'pembayaran': Pembayaran.objects.filter(tagihan=tagihan).order_by('-tanggal_pembayaran'),
+        **summary_stats,
+    }
+    return render(request, 'tagihan/detail.html', context)
+
 @login_required
 def pembayaran_list(request):
-    query = request.GET.get('q')
-    metode_filter = request.GET.get('metode')
-    tanggal_filter = request.GET.get('tanggal')
-
+    """Render payment list with filtering and pagination."""
     pembayaran_list = Pembayaran.objects.select_related('pelanggan', 'tagihan').all()
-
+    
+    query = request.GET.get('q', '').strip()
+    metode_filter = request.GET.get('metode', '')
+    tanggal_filter = request.GET.get('tanggal', '')
+    
     if query:
         pembayaran_list = pembayaran_list.filter(pelanggan__nama__icontains=query)
-
+    
     if metode_filter:
         pembayaran_list = pembayaran_list.filter(metode_pembayaran=metode_filter)
-
+    
     if tanggal_filter:
-        pembayaran_list = pembayaran_list.filter(tanggal_pembayaran__date=tanggal_filter)
+        try:
+            pembayaran_list = pembayaran_list.filter(tanggal_pembayaran__date=tanggal_filter)
+        except ValueError:
+            messages.error(request, 'Format tanggal tidak valid.')
+    
+    paginator = Paginator(pembayaran_list, ITEMS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get('page'))
 
-    paginator = Paginator(pembayaran_list, 10)
-    page = request.GET.get('page')
-    page_obj = paginator.get_page(page)
-
+    summary_stats = calculate_summary_stats()
+    
     context = {
         'pembayaran_list': page_obj,
         'page_obj': page_obj,
         'query': query,
         'metode_filter': metode_filter,
         'tanggal_filter': tanggal_filter,
+        **summary_stats,
     }
-
+    
     return render(request, 'pembayaran/list.html', context)
 
-# API Views untuk Chart.js (opsional, jika menggunakan AJAX)
 @login_required
-def api_pendapatan_per_bulan(request):
-    """API endpoint untuk data pendapatan per bulan"""
-    data = []
-    labels = []
-    for i in range(11, -1, -1):  # 12 bulan terakhir
-        bulan = timezone.now().replace(day=1) - timezone.timedelta(days=30*i)
-        total = Tagihan.objects.filter(
-            periode_bulan__month=bulan.month,
-            periode_bulan__year=bulan.year,
-            status='lunas'
-        ).aggregate(Sum('jumlah_tagihan'))['jumlah_tagihan__sum'] or 0
-        
-        data.append(float(total))
-        labels.append(bulan.strftime('%b %Y'))
-    
-    return JsonResponse({
-        'labels': labels,
-        'data': data,
-    })
-
-@login_required
-def api_pendapatan_per_lokasi(request):
-    """API endpoint untuk data pendapatan per lokasi"""
-    data = []
-    labels = []
-    for lokasi in Lokasi.objects.all():
-        total = Tagihan.objects.filter(
-            pelanggan__lokasi=lokasi,
-            status='lunas'
-        ).aggregate(Sum('jumlah_tagihan'))['jumlah_tagihan__sum'] or 0
-        
-        if total > 0:
-            data.append(float(total))
-            labels.append(lokasi.nama)
-    
-    return JsonResponse({
-        'labels': labels,
-        'data': data,
-    })
-
-@login_required
-def api_status_pelanggan(request):
-    """API endpoint untuk data status pelanggan"""
-    counts = [
-        Pelanggan.objects.filter(status='aktif').count(),
-        Pelanggan.objects.filter(status='belum_lunas').count(),
-        Pelanggan.objects.filter(status='suspend').count(),
-    ]
-    
-    return JsonResponse({
-        'labels': ['Aktif', 'Belum Lunas', 'Suspend'],
-        'data': counts,
-    })
+def laporan_view(request):
+    """Render report page with summary statistics."""
+    context = calculate_summary_stats()
+    return render(request, 'laporan/list.html', context)
