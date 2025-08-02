@@ -36,72 +36,103 @@
     </div>
   </div>
 
-  <div class="row mb-4 g-3">
-    <div class="col-md-6 col-lg-3">
-      <div class="card summary-card h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="card-title text-muted">Total Pendapatan</h6>
-              <h4 class="card-text">Rp 56,200,000</h4>
-              <small class="text-muted">pendapatan bersih:</small>
-              <small class="text-muted">pendapatan kotor:</small>
+ <div class="row mb-4 g-3">
+        <div class="col-md-6 col-lg-3">
+            <div class="card summary-card h-100" style="background-color: black; color: white;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center" >
+                        <div>
+                            <h6 class="card-title ">Total Pelanggan</h6>
+                            <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
+                            <h4 class="card-text">{{ total_pelanggan}} orang</h4> 
+                            <small class="">Aktif: {{pelanggan_aktif}} | Tidak Aktif : {{pelanggan_tidak_aktif}} | Suspend : {{pelanggan_suspend}}</small>
+                        </div>
+                        <i class="bi bi-currency-dollar fs-1 "></i>
+                    </div>
+                </div>
             </div>
-            <i class="bi bi-currency-dollar fs-1 text-muted"></i>
-          </div>
         </div>
-      </div>
-    </div>
-    <div class="col-md-6 col-lg-3">
-      <div class="card summary-card h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="card-title text-muted">Total Pelanggan</h6>
-              <h4 class="card-text">120</h4>
-              <small class="text-muted">Aktif: 5</small>
-              <small class="text-muted">Tidak aktif: 2</small>
-              <small class="text-muted">Suspend: 3 </small>
+        <div class="col-md-6 col-lg-3">
+            <div class="card summary-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted">Total Tagihan</h6>
+                            <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
+                            <h4 class="card-text">Rp {{ total_tagihan|floatformat:0 }}</h4>
+                            <small class="text-muted">Lunas, Belum Lunas & Tertunggak : {{jumlah_tagihan}} orang</small>
+                        </div>
+                        <i class="bi bi-check-circle fs-1 text-muted"></i>
+                    </div>
+                </div>
             </div>
-            <i class="bi bi-check-circle fs-1 text-muted"></i>
-          </div>
         </div>
-      </div>
-    </div>
-    <div class="col-md-6 col-lg-3">
-      <div class="card summary-card h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="card-title text-muted">Total Tagihan Lunas</h6>
-              <h4 class="card-text">45</h4>
-              <small class="text-muted">Terbayar: 12 orang</small>
+        <div class="col-md-6 col-lg-3">
+            <div class="card summary-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted">Total Lunas</h6>
+                            <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
+                            <h4 class="card-text">Rp {{ total_terbayar|floatformat:0 }}</h4>
+                            <small class="text-muted">Tagihan Terbayar : {{jumlah_pembayaran}} orang</small>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 text-muted"></i>
+                    </div>
+                </div>
             </div>
-            <i class="bi bi-exclamation-triangle fs-1 text-muted"></i>
-          </div>
         </div>
-      </div>
-    </div>
-    <div class="col-md-6 col-lg-3">
-      <div class="card summary-card h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <h6 class="card-title text-muted">Total Tagihan Belum Lunas</h6>
-              <h4 class="card-text">25</h4>
-              <small class="text-muted">Belum lunas & tertunggak: 5 orang</small>
+        <div class="col-md-6 col-lg-3">
+            <div class="card summary-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-muted">Belum Lunas</h6>
+                            <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
+                            <h4 class="card-text">Rp {{ total_belum_lunas|floatformat:0 }}</h4>
+                            <small class="text-muted">Tagihan belum lunas: {{jumlah_belum_lunas}} orang</small>
+                            
+                        </div>
+                        <i class="bi bi-pause-circle fs-1 text-muted"></i>
+                    </div>
+                </div>
             </div>
-            <i class="bi bi-pause-circle fs-1 text-muted"></i>
-          </div>
         </div>
-      </div>
     </div>
-  </div>
 
   <div class="row mb-4 g-3">
-    <div class="col-md-12 col-lg-8">
+    <!-- per tahun -->
+    <div class="col-md-12 col-lg-3">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          Pendapatan per Tahun
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-calendar me-1"></i>
+            <form method="get">
+              <select name="tahun" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Semua</option>
+                <option value="4" {% if tahun_filter == '4' %}selected{% endif %}>4 Tahun</option>
+                <option value="6" {% if tahun_filter == '6' %}selected{% endif %}>6 Tahun</option>
+                <option value="8" {% if tahun_filter == '8' %}selected{% endif %}>8 Tahun</option>
+                <option value="10" {% if tahun_filter == '10' %}selected{% endif %}>10 Tahun</option>
+              </select>
+            </form>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container">
+            <canvas id="revenueByYearChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- per bulan -->
+    <div class="col-md-12 col-lg-5">
       <div class="card shadow-sm">
-        <div class="card-header">Pendapatan per Bulan</div>
+        <div class="card-header">
+          Pendapatan per Bulan
+        </div>
         <div class="card-body">
           <div class="chart-container">
             <canvas id="revenueByMonthChart"></canvas>
@@ -109,9 +140,10 @@
         </div>
       </div>
     </div>
+    <!-- per lokasi -->
     <div class="col-md-6 col-lg-4">
       <div class="card shadow-sm h-100">
-        <div class="card-header">Pendapatan per Lokasi (Sep 2024)</div>
+        <div class="card-header">Pendapatan per Lokasi</div>
         <div class="card-body">
           <div class="chart-container">
             <canvas id="revenueByLocationChart"></canvas>
@@ -132,12 +164,13 @@
         </div>
       </div>
     </div>
+
     <div class="col-md-12 col-lg-8">
       <div class="card shadow-sm">
         <div
           class="card-header d-flex justify-content-between align-items-center">
-          <span>Pelanggan Terbaru / Belum Lunas</span>
-          <a href="#" class="btn btn-sm btn-outline-secondary">Lihat Semua</a>
+          <span>Tagihan</span>
+          <a href="{% url 'tagihan_app:tagihan_list'%}" class="btn btn-sm btn-outline-secondary">Lihat Semua</a>
         </div>
         <div class="card-body">
           <div class="table-responsive">
@@ -145,97 +178,38 @@
               <thead>
                 <tr>
                   <th scope="col">#</th>
-                  <th scope="col">Nama</th>
-                  <th scope="col">Lokasi</th>
-                  <th scope="col">Paket</th>
-                  <th scope="col">Harga</th>
+                  <th scope="col">Pelanggan</th>
+                  <th scope="col">Periode</th>
+                  <th scope="col">Jumlah Tagihan</th>
+                  <th scope="col">Jumlah Terbayar</th>
                   <th scope="col">Status</th>
-                  <th scope="col">Aksi</th>
                 </tr>
               </thead>
               <tbody>
+                {% for tagihan in tagihan_history %}
                 <tr>
-                  <td>1</td>
-                  <td>sakirin sepit</td>
-                  <td>Sepit</td>
-                  <td>Belum Lunas</td>
-                  <td>Rp 0</td>
+                  <td>{{ forloop.counter}}</td>
+                  <td>{{tagihan.pelanggan.nama}}</td>
+                  <td>{{tagihan.periode_bulan}}</td>
+                  <td>{{tagihan.jumlah_tagihan}}</td>
+                  <td>{{tagihan.jumlah_terbayar}}</td>
                   <td>
-                    <span class="badge badge-bg-warning">Belum Lunas</span>
-                  </td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-secondary">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-success">
-                      <i class="bi bi-currency-dollar"></i>
-                    </button>
+                    {% if tagihan.status == 'lunas' %}
+                        <span class="badge badge-bg aktif">Lunas</span>
+                    {% elif tagihan.status == 'belum_lunas' %}
+                        <span class="badge badge-bg tidak-aktif">Belum Lunas</span>
+                    {% elif tagihan.status == 'tertunggak' %}
+                        <span class="badge badge-bg suspend">Tertunggak</span>     
+                    {% else %}
+                        <span class="badge badge-bg">{{ tagihan.status }}</span>                                         
+                    {% endif %}
                   </td>
                 </tr>
+                {% empty %}
                 <tr>
-                  <td>2</td>
-                  <td>ibu waridah</td>
-                  <td>Sepit</td>
-                  <td>2 Device</td>
-                  <td>Rp 80,000</td>
-                  <td><span class="badge badge-bg-success">Aktif</span></td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-secondary">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-success">
-                      <i class="bi bi-currency-dollar"></i>
-                    </button>
-                  </td>
+                  <td colspan="7" class="text-center">Tidak ada tagihan</td>  
                 </tr>
-                <tr>
-                  <td>3</td>
-                  <td>najwa sepit</td>
-                  <td>Sepit</td>
-                  <td>Suspend</td>
-                  <td>Rp 0</td>
-                  <td><span class="badge badge-bg-danger">Suspend</span></td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-secondary">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-success">
-                      <i class="bi bi-currency-dollar"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>4</td>
-                  <td>encu</td>
-                  <td>dasan bangket</td>
-                  <td>2 Device</td>
-                  <td>Rp 80,000</td>
-                  <td><span class="badge badge-bg-success">Aktif</span></td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-secondary">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-success">
-                      <i class="bi bi-currency-dollar"></i>
-                    </button>
-                  </td>
-                </tr>
-                <tr>
-                  <td>5</td>
-                  <td>zoya</td>
-                  <td>dasan bangket</td>
-                  <td>3 Device</td>
-                  <td>Rp 100,000</td>
-                  <td><span class="badge badge-bg-success">Aktif</span></td>
-                  <td>
-                    <button class="btn btn-sm btn-outline-secondary">
-                      <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-outline-success">
-                      <i class="bi bi-currency-dollar"></i>
-                    </button>
-                  </td>
-                </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
@@ -251,18 +225,74 @@
 <!-- Bootstrap 5 JS Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+  const revenueYearCtx = document.getElementById("revenueByYearChart").getContext("2d");
+  const revenueYearChart = new Chart(revenueYearCtx, {
+    type: "bar",
+    data: {
+      labels: {{ year_labels|safe }},
+      datasets: [{
+        label: "Pendapatan (Rp)",
+        data: {{ year_totals|safe }},
+        backgroundColor: "#212529",
+        borderColor: "#212529",
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: "rgba(0, 0, 0, 0.1)" },
+          ticks: {
+            callback: function (value) {
+              return "Rp " + value.toLocaleString("id-ID");
+            },
+            color: "#212529",
+          },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: "#212529" },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              let label = context.dataset.label || "";
+              if (label) label += ": ";
+              if (context.parsed.y !== null) {
+                label += new Intl.NumberFormat("id-ID", {
+                  style: "currency",
+                  currency: "IDR",
+                  maximumFractionDigits: 0,
+                }).format(context.parsed.y);
+              }
+              return label;
+            },
+          },
+        },
+      },
+    },
+  });
+</script>
+
+<script>
   // Grafik Pendapatan per Bulan (Hitam Putih)
   const revenueMonthCtx = document
     .getElementById("revenueByMonthChart")
     .getContext("2d");
   const revenueMonthChart = new Chart(revenueMonthCtx, {
-    type: "line",
+    type: "bar",
     data: {
-      labels: ["Des 2023", "Mar 2024", "Jun 2024", "Sep 2024"],
+      labels: {{ monthly_labels|safe }},
       datasets: [
         {
           label: "Pendapatan (Rp)",
-          data: [3720000, 6890000, 8310000, 6200000],
+          data: {{ monthly_totals|safe }},
           fill: false,
           borderColor: "#212529",
           backgroundColor: "rgba(33, 37, 41, 0.1)",
@@ -332,22 +362,11 @@
   const revenueChart = new Chart(revenueCtx, {
     type: "bar",
     data: {
-      labels: [
-        "Sepit",
-        "Monjet",
-        "Dasan Bangket",
-        "Jangkar",
-        "Buwuh",
-        "Mtg Waru",
-        "Lokon",
-        "Setungkep",
-      ],
+      labels: {{ lokasi_labels|safe }},
       datasets: [
         {
           label: "Pendapatan (Rp)",
-          data: [
-            1500000, 800000, 1200000, 900000, 600000, 800000, 700000, 700000,
-          ],
+          data: {{ lokasi_totals|safe }},
           backgroundColor: "#212529",
           borderColor: "#212529",
           borderWidth: 1,
@@ -412,11 +431,11 @@
   const statusChart = new Chart(statusCtx, {
     type: "doughnut",
     data: {
-      labels: ["Aktif", "Belum Lunas", "Suspend"],
+      labels: ["Aktif", "Tidak Aktif", "Suspend"],
       datasets: [
         {
-          label: "Jumlah Pelanggan",
-          data: [120, 45, 25],
+          label: ["Aktif", "Tidak Aktif", "Suspend"],
+          data: {{ status_data|safe }},
           backgroundColor: ["#000000", "#6c757d", "#212529"],
           borderColor: "#ffffff",
           borderWidth: 2,

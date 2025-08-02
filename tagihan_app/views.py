@@ -10,6 +10,9 @@ from django.db.models import Sum, Q, Count
 from django.utils import timezone
 from datetime import datetime
 from .models import Tagihan, Pembayaran, Pelanggan, Paket, Lokasi
+from django.db.models.functions import TruncMonth
+from django.db.models.functions import ExtractYear
+from datetime import datetime, timedelta
 
 # Constants
 ITEMS_PER_PAGE = 10
@@ -23,6 +26,11 @@ def calculate_summary_stats() -> Dict[str, float]:
         total_terbayar=Sum('jumlah_terbayar')
     )
     total_pembayaran = Pembayaran.objects.aggregate(total=Sum('jumlah_pembayaran'))['total'] or 0
+
+    # pelanggan akftif, tidak aktif, suspend
+    pelanggan_aktif = Pelanggan.objects.filter(status='aktif').count()
+    pelanggan_belum_lunas = Pelanggan.objects.filter(status='tidak_aktif').count
+    pelanggan_suspend = Pelanggan.objects.filter(status='suspend').count()
     
     return {
         'total_tagihan': tagihan_agg['total_tagihan'] or 0,
@@ -32,6 +40,10 @@ def calculate_summary_stats() -> Dict[str, float]:
         'jumlah_tagihan': Tagihan.objects.count(),
         'jumlah_pembayaran': Pembayaran.objects.count(),
         'jumlah_belum_lunas': Tagihan.objects.filter(status='belum_lunas').count(),
+        'total_pelanggan': Pelanggan.objects.all().count(),
+        'pelanggan_aktif': pelanggan_aktif,
+        'pelanggan_tidak_aktif': pelanggan_belum_lunas,
+        'pelanggan_suspend': pelanggan_suspend,
     }
 
 def get_monthly_revenue_data(months: int = MONTHS_FOR_REPORT) -> tuple[List[float], List[str]]:
@@ -105,6 +117,65 @@ def dashboard(request):
     """Render the dashboard with summary statistics."""
     current_month = timezone.now().month
     current_year = timezone.now().year
+
+    total_pelanggan = calculate_summary_stats()
+
+    tagihan_history = Tagihan.objects.select_related('pelanggan').order_by('status','-periode_bulan')[:7]
+
+    # grafik
+        # === Pendapatan per bulan ===
+    payments_by_month = (
+        Pembayaran.objects
+        .annotate(month=TruncMonth('tanggal_pembayaran'))
+        .values('month')
+        .annotate(total=Sum('jumlah_pembayaran'))
+        .order_by('month')
+    )
+    monthly_labels = [p['month'].strftime('%b %Y') for p in payments_by_month]
+    monthly_totals = [int(p['total']) for p in payments_by_month]
+
+    # === Pendapatan per lokasi ===
+    payments_by_location = (
+        Pembayaran.objects
+        .values('pelanggan__lokasi__nama')
+        .annotate(total=Sum('jumlah_pembayaran'))
+        .order_by('pelanggan__lokasi__nama')
+    )
+    lokasi_labels = [p['pelanggan__lokasi__nama'] or "Tidak Diketahui" for p in payments_by_location]
+    lokasi_totals = [int(p['total']) for p in payments_by_location]
+
+    # === Status Pelanggan ===
+    status_data = [
+        Pelanggan.objects.filter(status='aktif').count(),
+        Pelanggan.objects.filter(status='tidak_aktif').count(),
+        Pelanggan.objects.filter(status='suspend').count()
+    ]
+
+    tahun_filter = request.GET.get('tahun', '')
+    
+    # Filter berdasarkan tahun terakhir
+    if tahun_filter and tahun_filter.isdigit():
+        tahun_mulai = datetime.now().year - int(tahun_filter) + 1
+        payments_by_year = (
+            Pembayaran.objects
+            .annotate(year=ExtractYear('tanggal_pembayaran'))
+            .filter(tanggal_pembayaran__year__gte=tahun_mulai)
+            .values('year')
+            .annotate(total=Sum('jumlah_pembayaran'))
+            .order_by('year')
+        )
+    else:
+        payments_by_year = (
+            Pembayaran.objects
+            .annotate(year=ExtractYear('tanggal_pembayaran'))
+            .values('year')
+            .annotate(total=Sum('jumlah_pembayaran'))
+            .order_by('year')
+        )
+
+    year_labels = [str(p['year']) for p in payments_by_year]
+    year_totals = [int(p['total']) for p in payments_by_year]
+
     
     context = {
         'total_pendapatan_bulan_ini': Tagihan.objects.filter(
@@ -130,7 +201,18 @@ def dashboard(request):
         ],
         'pelanggan_list': Pelanggan.objects.filter(
             Q(status='belum_lunas') | Q(status='suspend')
-        ).order_by('-id')[:RECENT_CUSTOMERS_LIMIT]
+        ).order_by('-id')[:RECENT_CUSTOMERS_LIMIT],
+        **total_pelanggan,
+        'tagihan_history': tagihan_history,
+        # grafik
+        "monthly_labels": monthly_labels,
+        "monthly_totals": monthly_totals,
+        "lokasi_labels": lokasi_labels,
+        "lokasi_totals": lokasi_totals,
+        "status_data": status_data,
+        "year_labels": year_labels,
+        "year_totals": year_totals,
+        "tahun_filter": tahun_filter,
     }
     
     return render(request, 'dashboard.html', context)
