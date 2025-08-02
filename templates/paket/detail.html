@@ -28,7 +28,7 @@
                 </div>
                 <div class="card-body">
                     <p><strong>Jenis Paket:</strong> {{ paket.get_jenis_paket_display }}</p>
-                    <p><strong>Harga:</strong> Rp {{ paket.harga|floatformat:0 }}</p>
+                    <p><strong>Harga:</strong> <span class="currency">Rp {{ paket.harga|floatformat:0 }}</span> </p>
                     {% if paket.jenis_paket == 'device' %}
                         <p><strong>Jumlah Device:</strong> {{ paket.jumlah_device }}</p>
                     {% elif paket.jenis_paket == 'pppoe' %}

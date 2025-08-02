@@ -59,7 +59,7 @@
                         <div>
                             <h6 class="card-title text-muted">Total Tagihan</h6>
                             <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                            <h4 class="card-text">Rp {{ total_tagihan|floatformat:0 }}</h4>
+                            <h4 class="card-text currency">Rp {{ total_tagihan|floatformat:0 }}</h4>
                             <small class="text-muted">Lunas, Belum Lunas & Tertunggak : {{jumlah_tagihan}} orang</small>
                         </div>
                         <i class="bi bi-check-circle fs-1 text-muted"></i>
@@ -74,7 +74,7 @@
                         <div>
                             <h6 class="card-title text-muted">Total Lunas</h6>
                             <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                            <h4 class="card-text">Rp {{ total_terbayar|floatformat:0 }}</h4>
+                            <h4 class="card-text currency">Rp {{ total_terbayar|floatformat:0 }}</h4>
                             <small class="text-muted">Tagihan Terbayar : {{jumlah_pembayaran}} orang</small>
                         </div>
                         <i class="bi bi-exclamation-triangle fs-1 text-muted"></i>
@@ -89,7 +89,7 @@
                         <div>
                             <h6 class="card-title text-muted">Belum Lunas</h6>
                             <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                            <h4 class="card-text">Rp {{ total_belum_lunas|floatformat:0 }}</h4>
+                            <h4 class="card-text currency">Rp {{ total_belum_lunas|floatformat:0 }}</h4>
                             <small class="text-muted">Tagihan belum lunas: {{jumlah_belum_lunas}} orang</small>
                             
                         </div>
@@ -191,8 +191,8 @@
                   <td>{{ forloop.counter}}</td>
                   <td>{{tagihan.pelanggan.nama}}</td>
                   <td>{{tagihan.periode_bulan}}</td>
-                  <td>{{tagihan.jumlah_tagihan}}</td>
-                  <td>{{tagihan.jumlah_terbayar}}</td>
+                  <td class="currency">{{tagihan.jumlah_tagihan}}</td>
+                  <td class="currency">{{tagihan.jumlah_terbayar}}</td>
                   <td>
                     {% if tagihan.status == 'lunas' %}
                         <span class="badge badge-bg aktif">Lunas</span>
@@ -467,4 +467,6 @@
     },
   });
 </script>
+
+
 {% endblock %}

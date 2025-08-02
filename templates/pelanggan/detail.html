@@ -28,8 +28,8 @@
                                     <div>
                                         <h6 class="card-title ">Total Pembayaran</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">Rp {{ total_pembayaran|floatformat:0 }}</h4>
-                                        <small class="">Sisa Tagihan : Rp {{total_belum_lunas}}</small>
+                                        <h4 class="card-text currency">Rp {{ total_pembayaran|floatformat:0 }}</h4>
+                                        <small >Sisa Tagihan : <span class="currency">Rp {{total_belum_lunas}}</span></small>
                                     </div>
                                     <i class="bi bi-currency-dollar fs-1 "></i>
                                 </div>
@@ -43,7 +43,7 @@
                                     <div>
                                         <h6 class="card-title text-muted">Total Tagihan</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">Rp {{ total_tagihan|floatformat:0 }}</h4>
+                                        <h4 class="card-text currency">Rp {{ total_tagihan|floatformat:0 }}</h4>
                                         <small class="text-muted">Lunas, Belum Lunas & Tertunggak : {{jumlah_tagihan}} orang</small>
                                     </div>
                                     <i class="bi bi-check-circle fs-1 text-muted"></i>
@@ -58,7 +58,7 @@
                                     <div>
                                         <h6 class="card-title text-muted">Total Lunas</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">Rp {{ total_terbayar|floatformat:0 }}</h4>
+                                        <h4 class="card-text currency">Rp {{ total_terbayar|floatformat:0 }}</h4>
                                         <small class="text-muted">Tagihan Terbayar : {{jumlah_pembayaran}} orang</small>
                                     </div>
                                     <i class="bi bi-exclamation-triangle fs-1 text-muted"></i>
@@ -73,7 +73,7 @@
                                     <div>
                                         <h6 class="card-title text-muted">Belum Lunas</h6>
                                         <!-- Placeholder for dynamic data, replace with actual Django context variable if available -->
-                                        <h4 class="card-text">Rp {{ total_belum_lunas|floatformat:0 }}</h4>
+                                        <h4 class="card-text currency">Rp {{ total_belum_lunas|floatformat:0 }}</h4>
                                         <small class="text-muted">Tagihan belum lunas: {{jumlah_belum_lunas}} orang</small>
                                         
                                     </div>
@@ -111,7 +111,7 @@
                                                 <td>{{ tagihan.periode_bulan|date:"F Y" }}</td>
                                                 <td>{{ tagihan.tanggal_tagihan|date:"d M Y" }}</td>
                                                 <td>{{ tagihan.tanggal_jatuh_tempo|date:"d M Y" }}</td>
-                                                <td>Rp {{ tagihan.jumlah_tagihan|floatformat:0 }}</td>
+                                                <td class="currency">Rp {{ tagihan.jumlah_tagihan|floatformat:0 }}</td>
                                                 <td>
                                                     {% if tagihan.status == 'lunas' %}
                                                         <span class="badge badge-bg aktif">Lunas</span>
@@ -198,7 +198,7 @@
                                                 <td>{{ forloop.counter }}</td>
                                                 <td>{{ pembyaran.tagihan.periode_bulan|date:"F Y" }}</td>
                                                 <td>{{ pembyaran.tanggal_pembayaran|date:"d M Y" }}</td>
-                                                <td>{{ pembyaran.jumlah_pembayaran }}</td>                                                
+                                                <td class="currency">{{ pembyaran.jumlah_pembayaran }}</td>                                                
                                                 <td>{{ pembyaran.metode_pembayaran }}</td>
                                                 <td>
                                                     {% if pembyaran.tagihan.status == 'lunas' %}
@@ -213,7 +213,7 @@
                                                 </td>
                                                 <td>{{ pembyaran.bukti_pembayaran }}</td>
                                                 <td>{{ pembyaran.tagihan.tanggal_tagihan }}</td>
-                                                <td>{{ pembyaran.tagihan.jumlah_tagihan }}</td>
+                                                <td class="currency">{{ pembyaran.tagihan.jumlah_tagihan }}</td>
                                                 <td>{{ pembyaran.tagihan.tanggal_jatuh_tempo }}</td>
                                             </tr>
                                             {% empty %}
