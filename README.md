@@ -4,11 +4,11 @@
     <h1>BUKAL NET</h1>
     <span>✨⭐⭐⭐✨</span>
     <hr>
-    <img src="../tagihan_wifi/static/img/UI/home.png" alt="spk">
+    <img src="/static/img/UI/home.png" alt="spk">
     <br>
-    <img src="../tagihan_wifi/static/img/UI/login.png" alt="spk">
+    <img src="/static/img/UI/login.png" alt="spk">
     <br>
-    <img src="../tagihan_wifi/static/img/UI/dashboard.png" alt="spk">
+    <img src="/static/img/UI/dashboard.png" alt="spk">
     <br>
 </div>
 
