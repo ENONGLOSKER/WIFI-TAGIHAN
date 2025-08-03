@@ -13,6 +13,7 @@ from .models import Tagihan, Pembayaran, Pelanggan, Paket, Lokasi
 from django.db.models.functions import TruncMonth
 from django.db.models.functions import ExtractYear
 from datetime import datetime, timedelta
+from .forms import PelangganForm
 
 # Constants
 ITEMS_PER_PAGE = 10
@@ -269,6 +270,52 @@ def pelanggan_detail(request, pk: UUID):
     }
     
     return render(request, 'pelanggan/detail.html', context)
+
+@login_required
+def pelanggan_add(request):
+    if request.method == 'POST':
+        form = PelangganForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pelanggan Berhasil ditambahkan.")
+            return redirect('tagihan_app:pelanggan_list') 
+    else:
+        messages.error(request, "Pelanggan Gagal ditambahkan.")
+        form = PelangganForm()
+    
+    context = {
+        'form': form,
+        'title': 'Tambah Pelanggan',
+    }
+    
+    return render(request, 'form/form.html', context)
+
+@login_required
+def pelanggan_update(request, pk):
+    pelanggan = get_object_or_404(Pelanggan, pk=pk)
+    if request.method == 'POST':
+        form = PelangganForm(request.POST, instance=pelanggan)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pelanggan berhasil diupdate.")
+            return redirect('tagihan_app:pelanggan_list')
+        else:
+            messages.error(request, "Gagal update pelanggan. Silakan cek data Anda.")
+    else:
+        form = PelangganForm(instance=pelanggan)
+    context = {
+        'form': form,
+        'title': 'Edit Pelanggan',
+        'pelanggan': pelanggan,
+    }
+    return render(request, 'form/form.html', context)
+
+@login_required
+def pelanggan_delete(request, pk):
+    pelanggan = get_object_or_404(Pelanggan, pk=pk)
+    pelanggan.delete()
+    messages.success(request, "Pelanggan berhasil dihapus.")
+    return redirect('tagihan_app:pelanggan_list')
 
 @login_required
 def paket_list(request):

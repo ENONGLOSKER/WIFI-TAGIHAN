@@ -14,10 +14,6 @@
         class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Data Pelanggan</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
-            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-                <i class="bi bi-calendar me-1"></i>
-                Bulan Ini
-            </button>
         </div>
     </div>
 
@@ -92,7 +88,7 @@
             <div class="card shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Data Pelanggan</span>
-                    <a href="#" class="btn btn-sm btn-outline-secondary">Tambah Data</a>
+                    <a href="{% url 'tagihan_app:pelanggan_add'%}" class="btn btn-primary">Tambah Data</a>
                 </div>
                 <div class="card-body">
                     <form method="GET" class="mb-3">
@@ -118,7 +114,7 @@
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                                <button type="submit" class="btn btn-secondary w-100">Filter</button>
                             </div>
                         </div>
                     </form>
@@ -164,10 +160,15 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-secondary"><i
-                                                class="bi bi-eye"></i></button>
-                                        <button class="btn btn-sm btn-outline-success"><i
-                                                class="bi bi-currency-dollar"></i></button>
+                                        <!-- tombol edit -->
+                                        <a href="{% url 'tagihan_app:pelanggan_update' pelanggan.id %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <!-- tombol delete -->
+                                        <a href="{% url 'tagihan_app:pelanggan_delete' pelanggan.id %}" class="btn btn-sm btn-outline-danger" title="Hapus"
+                                           onclick="return confirm('Yakin ingin menghapus data ini?');">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -224,11 +225,40 @@
             </div>
         </div>
     </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+            <div class="alert alert-success alert-dismissible fade show position-fixed bottom-0 start-0 m-4" role="alert" style="z-index:999;">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% elif message.tags == 'error' %}
+            <div class="alert alert-danger alert-dismissible fade show position-fixed bottom-0 start-0 m-4" role="alert" style="z-index:999;">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% else %}
+            <div class="alert alert-info alert-dismissible fade show position-fixed bottom-0 start-0 m-4" role="alert" style="z-index:999;">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <script>
+            setTimeout(function() {
+                document.querySelectorAll('.alert').forEach(function(el) {
+                el.classList.remove('show');
+                el.classList.add('hide');
+                });
+            }, 3000);
+            </script>
+        {% endfor %}
+    {% endif %}
 </main>
 {% endblock %}
 <!-- ///////////////////////////////////////////////////////////////////////// -->
 
 <!-- blok javascrip tambahan-->
 {% block script %}
-
 {% endblock %}

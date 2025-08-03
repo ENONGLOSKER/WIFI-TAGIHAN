@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+<!-- blok judul halaman -->
+{% block title %}Pelanggan{% endblock %}
+
+<!-- blok css tambahan -->
+{% block extra_css %}
+<style>
+    .bg-light {
+        background-color: #f7f7f9 !important;
+    }
+    .rounded-4 {
+        border-radius: 1.2rem !important;
+    }
+    .shadow-sm {
+        box-shadow: 0 2px 12px rgba(33,37,41,0.07) !important;
+    }
+    .bukal img:hover {
+        transform: scale(1.08) rotate(-6deg);
+        filter: drop-shadow(0 4px 12px rgba(33,37,41,0.12));
+    }
+</style>
+{% endblock %}
+
+<!-- blok konten utama -->
+{% block main %}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Form {{title}}</h1>
+    </div>
+
+    <!-- form -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-12 col-lg-7 border border-1 rounded-4 p-4 shadow-sm">
+            <form method="POST">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="text-danger small">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i> Simpan
+                    </button>
+                    <a href="" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Kembali
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-5">
+            <div class="bukal d-flex flex-column justify-content-center align-items-center h-100 bg-light rounded-4 shadow-sm p-4 position-relative">
+                <img src="{% static 'img/icons.svg'%}" alt="" class="" style="width: 110px; height: 110px; transition: transform 0.4s;">
+                <div class="w-100">
+                    <h5 class="text-center fw-bold mb-2" style="letter-spacing:2px;">BUKAL NET</h5>
+                    <p class="text-center text-muted mb-0" style="font-size:1rem;">Internet Cepat Koneksi Stabil</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+<!-- blok javascrip tambahan-->
+{% block script %}
+{% endblock %}

@@ -15,6 +15,10 @@ urlpatterns = [
     path('pembayaran/', views.pembayaran_list, name='pembayaran_list'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
-    path('laporan/', views.laporan_view, name='laporan')
+    path('laporan/', views.laporan_view, name='laporan'),
+    # form
+    path('pelanggan/add/', views.pelanggan_add, name='pelanggan_add'),
+    path('pelanggan/edit/<int:pk>/', views.pelanggan_update, name='pelanggan_update'),
+    path('pelanggan/delete/<int:pk>/', views.pelanggan_delete, name='pelanggan_delete'),
     
 ]
