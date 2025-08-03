@@ -4,9 +4,11 @@
     <h1>BUKAL NET</h1>
     <span>✨⭐⭐⭐✨</span>
     <hr>
-    <img src="TES.png" alt="spk">
+    <img src="../tagihan_wifi/static/img/UI/home.png" alt="spk">
     <br>
-    <img src="TES2.png" alt="spk">
+    <img src="../tagihan_wifi/static/img/UI/login.png" alt="spk">
+    <br>
+    <img src="../tagihan_wifi/static/img/UI/dashboard.png" alt="spk">
     <br>
 </div>
 
@@ -16,11 +18,11 @@
 - 📍&nbsp;&nbsp;[Install Python (Python Official)](https://www.python.org/)
 - 📗&nbsp;&nbsp;Clone repository
 ```bash
-git https://github.com/ENONGLOSKER/SPK-SISWA-BERPRESTASI.git
+git https://github.com/ENONGLOSKER/WIFI-TAGIHAN.git
 ```
 - 📁&nbsp;&nbsp;Masuk ke Folder
 ```bash
-cd SPK SISWA PRESTASI
+cd tagihan_wifi
 ```
 - 📁&nbsp;&nbsp;Install requirements
 ```bash
