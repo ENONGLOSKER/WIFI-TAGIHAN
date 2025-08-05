@@ -46,5 +46,7 @@ celery -A tagihan_wifi beat --loglevel=info --scheduler django_celery_beat.sched
 ```
 <br>
 
+pip install celery redis django-celery-beat
+
 ## FunForCode
 #Elqusairi

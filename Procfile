@@ -1,0 +1,1 @@
+web: gunicorn tagihan_wifi.wsgi --log-file -
