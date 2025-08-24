@@ -1,0 +1,112 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Tagihan Wifi Bukal Net</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .highlight-yellow {
+            background-color: yellow;
+            font-weight: bold;
+        }
+        .highlight-green {
+            background-color: lightgreen;
+            font-weight: bold;
+        }
+        .highlight-blue {
+            background-color: skyblue;
+            font-weight: bold;
+        }
+        .negative {
+            color: red;
+            font-weight: bold;
+        }
+        .total-row td {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>LAPORAN TAGIHAN WIFI BUKAL NET PER. {{ tahun }}</h2>
+    </div>
+
+    <table>
+        <tr>
+            <td class="highlight-yellow" colspan="3">TOTAL PENDAPATAN</td>
+            <td colspan="2" class="highlight-yellow">Rp {{ total_tagihan|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td class="highlight-green" colspan="3">TOTAL LUNAS</td>
+            <td colspan="2" class="highlight-green">Rp {{ total_lunas|floatformat:0|intcomma }}</td>
+        </tr>
+        <tr>
+            <td class="highlight-blue" colspan="3">TOTAL BELUM LUNAS</td>
+            <td colspan="2" class="highlight-blue negative">-Rp {{ total_belum_lunas|floatformat:0|intcomma }}</td>
+        </tr>
+    </table>
+
+    <br>
+
+    <table>
+        <thead>
+            <tr>
+                <th>NO</th>
+                <th>PELANGGAN</th>
+                <th>ALAMAT</th>
+                <th>DEVICE</th>
+                <th>STATUS</th>
+                <th>PERIODE</th>
+                <th>JML TAGIHAN</th>
+                <th>TGL BAYAR</th>
+                <th>JML TERBAYAR</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tagihan in tagihan_list %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ tagihan.pelanggan.nama }}</td>
+                <td>{{ tagihan.pelanggan.lokasi.nama }}</td>
+                <td>{{ tagihan.pelanggan.jumlah_device }}</td>
+                <td>{{ tagihan.get_status_display }}</td>
+                <td>{{ tagihan.periode_bulan|date:"M-Y" }}</td>
+                <td>Rp {{ tagihan.jumlah_tagihan|floatformat:0|intcomma }}</td>
+                <td>
+                    {% if tagihan.pembayaran_set.first %}
+                        {{ tagihan.pembayaran_set.first.tanggal_pembayaran|date:"d/m/Y" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>Rp {{ tagihan.jumlah_terbayar|floatformat:0|intcomma }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total-row">
+                <td colspan="6">JUMLAH</td>
+                <td>Rp {{ total_tagihan|floatformat:0|intcomma }}</td>
+                <td></td>
+                <td>Rp {{ total_lunas|floatformat:0|intcomma }}</td>
+                <td class="negative">-Rp {{ total_belum_lunas|floatformat:0|intcomma }}</td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

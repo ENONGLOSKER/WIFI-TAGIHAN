@@ -29,5 +29,9 @@ urlpatterns = [
     # tagihan
     path('tagihan/', views.tagihan_list, name='tagihan_list'),
     path('tagihan/<int:pk>/', views.tagihan_detail, name='tagihan_detail'),
+    # laporan
+    path('laporan/', views.laporan_view, name='laporan_list'),
+    path('laporan/cetak/', views.laporan_cetak, name='laporan_cetak'),
+
     
 ]

@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'tagihan_task',
     # third-party
     'django_celery_beat',
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [

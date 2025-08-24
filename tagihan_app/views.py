@@ -16,6 +16,7 @@ from datetime import datetime, timedelta
 from .forms import PelangganForm, PembayaranForm
 from decimal import Decimal
 
+
 # Constants
 ITEMS_PER_PAGE = 10
 RECENT_CUSTOMERS_LIMIT = 10
@@ -497,6 +498,79 @@ def pembayaran_delete(request, pk):
 
 @login_required
 def laporan_view(request):
-    """Render report page with summary statistics."""
-    context = calculate_summary_stats()
+    query = request.GET.get('q', '')
+    status_filter = request.GET.get('status', '')
+    lokasi_filter = request.GET.get('lokasi', '')
+    bulan_filter = request.GET.get('bulan', '')
+
+    tagihan_list = Tagihan.objects.select_related('pelanggan', 'pelanggan__lokasi')
+
+    # Filter pencarian
+    if query:
+        tagihan_list = tagihan_list.filter(
+            Q(pelanggan__nama__icontains=query) |
+            Q(pelanggan__username_pppoe__icontains=query)
+        )
+
+    if status_filter:
+        tagihan_list = tagihan_list.filter(status=status_filter)
+
+    if lokasi_filter:
+        tagihan_list = tagihan_list.filter(pelanggan__lokasi__id=lokasi_filter)
+
+    if bulan_filter:
+        try:
+            year, month = map(int, bulan_filter.split('-'))
+            tagihan_list = tagihan_list.filter(periode_bulan__year=year, periode_bulan__month=month)
+        except ValueError:
+            pass
+
+    # Urutkan
+    tagihan_list = tagihan_list.order_by('-periode_bulan', 'status')
+
+    # Total
+    total_tagihan = tagihan_list.aggregate(total=Sum('jumlah_tagihan'))['total'] or 0
+    total_lunas = tagihan_list.aggregate(total=Sum('jumlah_terbayar'))['total'] or 0
+    total_belum_lunas = total_tagihan - total_lunas
+
+    # Pilihan filter
+    bulan_choices = Tagihan.objects.values_list('periode_bulan', flat=True).distinct().order_by('-periode_bulan')
+    lokasi_choices = Lokasi.objects.all()
+
+    context = {
+        'tagihan_list': tagihan_list,
+        'total_tagihan': total_tagihan,
+        'total_lunas': total_lunas,
+        'total_belum_lunas': total_belum_lunas,
+        'tahun': timezone.now().year,
+
+        'query': query,
+        'status_filter': status_filter,
+        'lokasi_filter': lokasi_filter,
+        'bulan_filter': bulan_filter,
+        'bulan_choices': bulan_choices,
+        'lokasi_choices': lokasi_choices,
+    }
+
     return render(request, 'laporan/list.html', context)
+
+@login_required
+def laporan_cetak(request):
+    """Render report page with summary statistics."""
+    tagihan_list = Tagihan.objects.select_related('pelanggan', 'pelanggan__lokasi') \
+                                   .order_by('-periode_bulan', 'status')
+    
+    total_tagihan = tagihan_list.aggregate(total=Sum('jumlah_tagihan'))['total'] or 0
+    total_lunas = tagihan_list.aggregate(total=Sum('jumlah_terbayar'))['total'] or 0
+    total_belum_lunas = total_tagihan - total_lunas
+
+    context = {
+        'tagihan_list': tagihan_list,
+        'total_tagihan': total_tagihan,
+        'total_lunas': total_lunas,
+        'total_belum_lunas': total_belum_lunas,
+        'tahun': timezone.now().year
+    }
+    return render(request, 'laporan/cetak_laporan.html', context)
+
+# fungsi print dan download laporan

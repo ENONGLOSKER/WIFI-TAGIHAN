@@ -1,19 +1,25 @@
+{% load static %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="../static/img/favicons.svg" type="image/x-icon">
+    <link rel="shortcut icon" href="{%static 'img/favicons.svg' %}" type="image/x-icon">
     <title>BUKAL NET</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
+        :root {
+            --bs-font-sans-serif: 'Inter', sans-serif;
+            --bs-heading-font-family: 'Poppins', sans-serif;
+            --bs-heading-font-weight: 700;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: var(--bs-font-sans-serif);
             background-color: #f8f9fa;
             color: #212529;
             min-height: 100vh;
@@ -21,14 +27,9 @@
             flex-direction: column;
         }
 
-        h1,
-        h2,
-        h3,
-        h4,
-        h5,
-        h6 {
-            font-family: 'Poppins', sans-serif;
-            font-weight: 700;
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--bs-heading-font-family);
+            font-weight: var(--bs-heading-font-weight);
             color: #212529;
         }
 
@@ -40,25 +41,24 @@
             font-size: 1.3rem;
             color: #000000;
         }
-
+        
+        /* Menggunakan max-width untuk logo agar lebih responsif */
         .navbar-brand img {
+            max-width: 30px; 
             border-radius: 4px;
         }
 
         .navbar-nav .nav-link {
             color: #6c757d;
-            /* Abu-abu default */
             font-weight: 500;
             transition: color 0.2s ease;
             padding-left: 1.2rem;
-            /* Jarak antar menu */
             padding-right: 1.2rem;
         }
 
         .navbar-nav .nav-link:hover,
         .navbar-nav .nav-link.active {
             color: #000000;
-            /* Hitam saat hover/aktif */
         }
 
         .navbar-nav .dropdown-menu {
@@ -92,7 +92,6 @@
             border-color: #000000;
             color: #ffffff;
             border-radius: 6px;
-            /* Sudut agak membulat */
             transition: background-color 0.2s ease, transform 0.2s ease;
         }
 
@@ -102,20 +101,15 @@
             transform: translateY(-1px);
         }
 
-        /* Main Content Section */
         .main-content {
             flex-grow: 1;
-            /* Agar section ini mengisi sisa ruang vertikal */
             padding: 80px 0;
-            /* Padding atas bawah */
             background-color: #ffffff;
         }
-
+        
         .top-link {
             background-color: #e0e0e0;
-            /* Background abu-abu terang */
             color: #333333;
-            /* Teks abu-abu gelap */
             font-size: 0.9rem;
             padding: 0.5rem 1rem;
             transition: background-color 0.2s ease, color 0.2s ease;
@@ -129,12 +123,16 @@
 
         .main-headline {
             font-size: 4rem;
-            /* Ukuran font lebih besar */
             line-height: 1.1;
             max-width: 800px;
             margin-left: auto;
             margin-right: auto;
             color: #212529;
+            font-weight: 500 !important; /* Menyatukan font-weight di sini */
+        }
+
+        .main-headline span {
+            font-weight: 700 !important;
         }
 
         .main-subheadline {
@@ -147,7 +145,6 @@
 
         .action-buttons .btn-lg {
             padding: 1rem 2.5rem;
-            /* Ukuran tombol lebih besar */
             border-radius: 8px;
             font-size: 1.1rem;
             font-weight: 600;
@@ -165,23 +162,17 @@
             transform: translateY(-1px);
         }
 
-        /* Feature Icons Row */
         .feature-icons-row {
             margin-top: 80px;
-            /* Jarak dari tombol */
             border-top: 1px solid #e0e0e0;
-            /* Garis di atas ikon */
             padding-top: 40px;
-            /* Padding di atas garis */
         }
 
         .feature-item {
             background-color: #ffffff;
-            /* Latar belakang putih */
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             padding: 10px 20px;
-            /* Padding dalam item */
             color: #343a40;
             transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
             cursor: pointer;
@@ -195,10 +186,38 @@
 
         .feature-item i {
             color: #555555;
-            /* Warna ikon lebih gelap */
+        }
+        
+        /* TOP ANIMASI */
+        .animated-border-light {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
 
-        /* Responsive Adjustments */
+        .animated-border-light::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent);
+            transform: skewX(-20deg);
+            animation: borderLight 2.5s infinite linear;
+            z-index: 0;
+        }
+
+        @keyframes borderLight {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 150%;
+            }
+        }
+        
+        /* Perbaikan untuk mobile */
         @media (max-width: 992px) {
             .navbar-collapse {
                 margin-top: 15px;
@@ -210,14 +229,15 @@
                 margin-bottom: 5px;
             }
 
-            .d-flex.align-items-center {
+            /* Perbaiki tata letak navbar buttons di mobile */
+            .navbar .d-flex.align-items-center {
                 flex-direction: column;
-                align-items: flex-start !important;
+                align-items: stretch !important;
+                gap: 10px;
             }
 
-            .d-flex.align-items-center .btn {
+            .navbar .d-flex.align-items-center .btn {
                 width: 100%;
-                margin-bottom: 10px;
             }
 
             .main-headline {
@@ -226,10 +246,6 @@
 
             .main-subheadline {
                 font-size: 1.1rem;
-            }
-
-            .feature-icons-row {
-                margin-top: 50px;
             }
         }
 
@@ -247,122 +263,46 @@
                 padding: 50px 0;
             }
 
+            /* Gunakan flex-column untuk tumpukan tombol */
             .action-buttons {
                 flex-direction: column;
                 gap: 15px;
             }
-
+            
             .action-buttons .btn-lg {
-                width: 80%;
-                /* Tombol melebar di mobile */
-                margin: 0 auto;
+                width: 100%; /* Tombol akan mengisi lebar penuh kontainer */
             }
 
+            /* Gunakan flex-column untuk tumpukan item fitur */
             .feature-icons-row {
                 flex-direction: column;
                 gap: 15px;
             }
 
             .feature-item {
-                width: 80%;
-                /* Item fitur melebar */
+                width: 100%; /* Item fitur akan mengisi lebar penuh kontainer */
                 justify-content: center;
             }
-        }
-
-        /* TOP ANIMASI */
-        /* Animasi Kilatan Cahaya pada Border */
-        .animated-border-light {
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .animated-border-light::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            /* Mulai dari luar kiri */
-            width: 50%;
-            /* Lebar kilatan */
-            height: 100%;
-            /* Tinggi kilatan mengikuti tinggi elemen */
-            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent);
-            /* Gradien cahaya */
-            transform: skewX(-20deg);
-            /* Memberikan efek miring seperti kilatan */
-            animation: borderLight 2.5s infinite linear;
-            /* Animasi berulang */
-            z-index: 0;
-            /* Di bawah konten, di atas background */
-        }
-
-        @keyframes borderLight {
-            0% {
-                left: -100%;
-                /* Mulai dari luar kiri */
-            }
-
-            100% {
-                left: 150%;
-                /* Bergerak ke luar kanan */
-            }
-        }
-
-        /* Opsional: Sesuaikan efek hover agar tidak bentrok dengan animasi kilatan */
-        .top-link:hover {
-            color: #000000 !important;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 
 <body>
-
     <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
         <div class="container-fluid px-5">
-            <a class="navbar-brand fw-bold" href="#">
-                <img src="../static/img/icons.svg" alt="WIFI" class="me-2" style="width: 30%;"> BUKAL NET
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                <img src="{% static 'img/icons.svg' %}" alt="WIFI" class="me-2 d-none d-lg-block" style="max-width: 30px;">
+                BUKAL NET
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <!-- <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPlatform" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Platform
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownPlatform">
-                            <li><a class="dropdown-item" href="#">Overview</a></li>
-                            <li><a class="dropdown-item" href="#">Features</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"> Integrations</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownResources" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Resources
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownResources">
-                            <li><a class="dropdown-item" href="#">Blog</a></li>
-                            <li><a class="dropdown-item" href="#">Guides</a></li>
-                            <li><a class="dropdown-item" href="#">Support</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Customers</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Pricing</a>
-                    </li> -->
-                </ul>
+                    </ul>
                 <div class="d-flex align-items-center">
-                    <a href="#" class="btn btn-link text-decoration-none text-dark me-3 fw-medium">Sign in</a>
-                    <a href="#" class="btn btn-dark px-4 py-2 fw-medium">Dashboard</a>
+                    <a href="{% url 'tagihan_app:login'%}" class="btn btn-link text-decoration-none text-dark me-3 fw-medium">Sign in</a>
+                    <a href="{% url 'tagihan_app:dashboard' %}" target="_blank" class="btn btn-dark px-4 py-2 fw-medium">Dashboard</a>
                 </div>
             </div>
         </div>
@@ -370,49 +310,63 @@
 
     <section class="main-content d-flex flex-column align-items-center justify-content-center text-center">
         <div class="container px-4">
-            <a href="#" class="top-link btn btn-sm rounded-pill mb-4 px-3 py-2 fw-medium animated-border-light"
-                style="border: 1px solid rgb(230, 230, 230); background-color: #d0d0d036;">
+            <a href="#" class="top-link btn btn-sm rounded-pill mb-4 px-3 py-2 fw-medium animated-border-light" style="border: 1px solid rgb(230, 230, 230); background-color: #d0d0d036;">
                 ✨ Penyedia Layanan Internet <i class="bi bi-chevron-right ms-2"></i>
             </a>
 
-            <h1 class="display-2 " style="font-weight: 500;">
-                <span style="font-weight: 510;">Bukal Net</span> Internet Cepat <br class="d-none d-md-block"> Koneksi
-                Stabil
+            <h1 class="main-headline">
+                <span style="font-weight: 400;">Bukal Net</span> Internet Cepat <br class="d-none d-md-block"> Koneksi Stabil
             </h1>
-            <p class=" mb-5 main-subheadline">
-                WIFI Bukal Net memberikan akses internet cepat dan stabil untuk semua kebutuhan anda. Dengan pelayanan
-                gercep, kami memastikan koneksi yang lancar untuk pekerjaan, belajar, dan hiburan Anda.
+            <p class="mb-5 main-subheadline">
+                WIFI Bukal Net memberikan akses internet cepat dan stabil untuk semua kebutuhan Anda. Dengan pelayanan
+                gercep, kami memastikan koneksi yang lancar untuk pekerjaan, belajar, dan hiburan Anda
             </p>
 
             <div class="d-flex justify-content-center gap-3 mb-5 action-buttons">
                 <a href="#" class="btn btn-dark btn-lg px-4 py-3 fw-medium">Daftar Gratis</a>
-                <a href="#" class="btn btn-outline-dark btn-lg px-4 py-3 fw-medium">Hubungi Kami</a>
+                <a href="https://wa.me/6283129278033?text=Halo%20Bukal%20Net.%20Saya%20ingin%20bertanya%20tentang%3A%0A%0A%E2%9C%85%20Pemasangan%20baru%0A%E2%9C%85%20Paket%20internet" class="btn btn-outline-dark btn-lg px-4 py-3 fw-medium" target="_blank">Hubungi Kami</a>
             </div>
 
-            <div class="feature-icons-row d-flex justify-content-center align-items-center flex-wrap gap-4 pt-5 pb-4">
-                <div class="feature-item d-flex align-items-center gap-2">
+            <div class="feature-icons-row d-flex flex-column flex-md-row justify-content-center align-items-center flex-wrap gap-4 pt-5 pb-4">
+                <a href="{% url 'tagihan_app:pelanggan_list' %}" style="text-decoration: none;" class="feature-item d-flex align-items-center gap-2">
                     <i class="bi bi-database fs-5"></i>
                     <span class="fw-medium">Pelanggan</span>
-                </div>
-                <div class="feature-item d-flex align-items-center gap-2">
+                </a>
+                <a href="{% url 'tagihan_app:tagihan_list' %}" style="text-decoration: none;" class="feature-item d-flex align-items-center gap-2">
                     <i class="bi bi-lightning-charge fs-5"></i>
                     <span class="fw-medium">Tagihan</span>
-                </div>
-                <div class="feature-item d-flex align-items-center gap-2">
+                </a>
+                <a href="{% url 'tagihan_app:paket_list' %}" style="text-decoration: none;" class="feature-item d-flex align-items-center gap-2">
                     <i class="bi bi-arrow-right-short fs-5"></i>
                     <span class="fw-medium">Paket</span>
-                </div>
-                <div class="feature-item d-flex align-items-center gap-2">
+                </a>
+                <a href="{% url 'tagihan_app:pembayaran_list' %}" style="text-decoration: none;" class="feature-item d-flex align-items-center gap-2">
                     <i class="bi bi-graph-up fs-5"></i>
                     <span class="fw-medium">Pembayaran</span>
-                </div>
-                <div class="feature-item d-flex align-items-center gap-2">
+                </a>
+                <a href="{% url 'tagihan_app:dashboard' %}" style="text-decoration: none;" class="feature-item d-flex align-items-center gap-2">
                     <i class="bi bi-bar-chart fs-5"></i>
                     <span class="fw-medium">Pelaporan</span>
-                </div>
+                </a>
             </div>
         </div>
     </section>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-success py-2" id="auto-alert-{{ forloop.counter }}" role="alert" style="position: absolute; top: 120px; right: 20px; z-index: 999;">
+                {{ message }} !
+            </div>
+            <script>
+                setTimeout(function() {
+                    var alertBox = document.getElementById('auto-alert-{{ forloop.counter }}');
+                    if (alertBox) {
+                        alertBox.style.display = 'none';
+                    }
+                }, 2000);
+            </script>
+        {% endfor %}
+    {% endif %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
