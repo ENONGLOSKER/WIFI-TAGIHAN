@@ -14,10 +14,6 @@
         class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
         <h1 class="h2">Data Pembayaran</h1>
         <div class="btn-toolbar mb-2 mb-md-0">
-            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-                <i class="bi bi-calendar me-1"></i>
-                Bulan Ini
-            </button>
         </div>
     </div>
 
@@ -92,7 +88,7 @@
             <div class="card shadow-sm">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>Data Pelanggan</span>
-                    <a href="#" class="btn btn-sm btn-outline-secondary">Tambah Data</a>
+                    <a href="" class="btn btn-primary">Tambah Data</a>
                 </div>
                 <div class="card-body">
                     <form method="GET" class="mb-3">
@@ -114,7 +110,7 @@
                                 <input type="date" name="tanggal" class="form-control" value="{{ tanggal_filter|default:'' }}">
                             </div>
                             <div class="col-md-2">
-                                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                                <button type="submit" class="btn btn-secondary w-100">Filter</button>
                             </div>
                         </div>
                     </form>
@@ -139,7 +135,7 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td><a href="{% url 'tagihan_app:tagihan_list'%}" style="color: rgb(22, 70, 214); font-weight: 500; text-decoration: none;">{{ pembayaran.pelanggan.nama }}</a></td>
-                                    <td>Rp {{ pembayaran.jumlah_pembayaran|floatformat:0 }}</td>
+                                    <td class="currency">Rp {{ pembayaran.jumlah_pembayaran|floatformat:0 }}</td>
                                     <td>{{ pembayaran.get_metode_pembayaran_display }}</td>
                                     <td>{{ pembayaran.tanggal_pembayaran|date:"d M Y" }}</td>
                                     <td>{{pembayaran.tagihan.periode_bulan}}</td>
@@ -157,15 +153,21 @@
                                     <td>
                                         {% if pembayaran.bukti_pembayaran %}
                                             <a href="{{ pembayaran.bukti_pembayaran.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye"></i>
+                                                <img src="{{pembayaran.bukti_pembayaran.url}}" alt="">
                                             </a>
                                         {% else %}
                                             <span class="text-muted">-</span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-outline-success">
-                                            <i class="bi bi-currency-dollar"></i>
+                                        <!-- tombol edit -->
+                                        <a href="{% url 'tagihan_app:pembayaran_update' pembayaran.id %}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                        <!-- tombol delete -->
+                                        <a href="{% url 'tagihan_app:pembayaran_delete' pembayaran.id %}" class="btn btn-sm btn-outline-danger" title="Hapus"
+                                           onclick="return confirm('Yakin ingin menghapus data ini?');">
+                                            <i class="bi bi-trash"></i>
                                         </a>
                                     </td>
                                 </tr>

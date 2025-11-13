@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from .models import Pelanggan
+from .models import Pelanggan, Pembayaran
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
@@ -56,4 +56,42 @@ class PelangganForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         # Tambahkan validasi antar field di sini jika perlu
+        return cleaned_data
+
+class PembayaranForm(forms.ModelForm):
+    class Meta:
+        model = Pembayaran
+        fields = [
+            'tagihan', 'pelanggan', 'jumlah_pembayaran', 'tanggal_pembayaran',
+            'metode_pembayaran', 'keterangan','bukti_pembayaran'
+        ]
+        widgets = {
+            'tagihan': forms.Select(attrs={'class': 'form-select'}),
+            'pelanggan': forms.Select(attrs={'class': 'form-select'}),
+            'jumlah_pembayaran': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'tanggal_pembayaran': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
+            'metode_pembayaran': forms.Select(attrs={'class': 'form-select'}),
+            'keterangan': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'bukti_pembayaran': forms.FileInput(attrs={'class': 'form-control', 'rows': 2}),
+        }
+
+    def clean_jumlah_pembayaran(self):
+        jumlah = self.cleaned_data.get('jumlah_pembayaran')
+        if jumlah is None or jumlah <= 0:
+            raise ValidationError("Jumlah pembayaran harus lebih dari 0.")
+        return jumlah
+
+    def clean_tanggal_pembayaran(self):
+        tanggal = self.cleaned_data.get('tanggal_pembayaran')
+        if tanggal:
+            # Konversi ke date jika bertipe datetime
+            if hasattr(tanggal, 'date'):
+                tanggal = tanggal.date()
+            if tanggal > timezone.now().date():
+                raise ValidationError("Tanggal pembayaran tidak boleh di masa depan.")
+        return tanggal
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Validasi tambahan antar field jika diperlukan
         return cleaned_data

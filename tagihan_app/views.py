@@ -13,7 +13,8 @@ from .models import Tagihan, Pembayaran, Pelanggan, Paket, Lokasi
 from django.db.models.functions import TruncMonth
 from django.db.models.functions import ExtractYear
 from datetime import datetime, timedelta
-from .forms import PelangganForm
+from .forms import PelangganForm, PembayaranForm
+from decimal import Decimal
 
 # Constants
 ITEMS_PER_PAGE = 10
@@ -260,15 +261,20 @@ def pelanggan_list(request):
 def pelanggan_detail(request, pk: UUID):
     """Render customer detail page."""
     pelanggan = get_object_or_404(Pelanggan.objects.select_related('lokasi', 'paket'), pk=pk)
-    sumary_stats = calculate_summary_stats()
-    
+    summary_stats = calculate_summary_stats()
+
+    # Ambil semua tagihan pelanggan
+    tagihan_list = Tagihan.objects.filter(pelanggan=pelanggan).order_by('-periode_bulan')
+    # Ambil semua pembayaran yang terkait dengan tagihan pelanggan
+    pembayaran_list = Pembayaran.objects.filter(tagihan__in=tagihan_list).order_by('-tanggal_pembayaran')
+
     context = {
         'pelanggan': pelanggan,
-        'tagihan_list': Tagihan.objects.filter(pelanggan=pelanggan).order_by('-periode_bulan'),
-        'pembayaran_list': Pembayaran.objects.filter(tagihan__pelanggan=pelanggan).order_by('-tanggal_pembayaran'),
-        **sumary_stats,
+        'tagihan_list': tagihan_list,
+        'pembayaran_list': pembayaran_list,
+        **summary_stats,
     }
-    
+
     return render(request, 'pelanggan/detail.html', context)
 
 @login_required
@@ -423,6 +429,71 @@ def pembayaran_list(request):
     }
     
     return render(request, 'pembayaran/list.html', context)
+
+@login_required
+def bayar_tagihan(request, tagihan_id):
+    tagihan = get_object_or_404(Tagihan, id=tagihan_id)
+    
+    if request.method == 'POST':
+        jumlah = Decimal(request.POST.get('jumlah_pembayaran'))
+        metode = request.POST.get('metode_pembayaran')
+        keterangan = request.POST.get('keterangan', '')
+        bukti = request.FILES.get('bukti_pembayaran')  # jika upload bukti
+
+        # Buat pembayaran baru
+        pembayaran = Pembayaran.objects.create(
+            tagihan=tagihan,
+            pelanggan=tagihan.pelanggan,
+            jumlah_pembayaran=jumlah,
+            metode_pembayaran=metode,
+            keterangan=keterangan,
+            bukti_pembayaran=bukti,
+            tanggal_pembayaran=timezone.now()
+        )
+
+        # Update tagihan
+        tagihan.jumlah_terbayar += jumlah
+
+        if tagihan.jumlah_terbayar >= tagihan.jumlah_tagihan:
+            tagihan.status = 'lunas'
+        elif 0 < tagihan.jumlah_terbayar < tagihan.jumlah_tagihan:
+            tagihan.status = 'sebagian_terbayar'
+        else:
+            tagihan.status = 'belum_lunas'
+
+        tagihan.save()
+
+        messages.success(request, "Pembayaran berhasil dicatat.")
+        return redirect('tagihan_app:pembayaran_list')
+
+    return render(request, 'form/pembayaran.html', {'tagihan': tagihan})
+
+@login_required
+def pembayaran_update(request, pk):
+    pembayaran = get_object_or_404(Pembayaran, pk=pk)
+    if request.method == 'POST':
+        form = PembayaranForm(request.POST, instance=pembayaran)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Pembayaran berhasil diupdate.")
+            return redirect('tagihan_app:pembayaran_list')
+        else:
+            messages.error(request, "Gagal update pembayaran. Silakan cek data Anda.")
+    else:
+        form = PembayaranForm(instance=pembayaran)
+    context = {
+        'form': form,
+        'title': 'Edit Pembayaran',
+        'pembayaran': pembayaran,
+    }
+    return render(request, 'form/form.html', context)
+
+@login_required
+def pembayaran_delete(request, pk):
+    pembayaran = get_object_or_404(Pembayaran, pk=pk)
+    pembayaran.delete()
+    messages.success(request, "Pembayaran berhasil dihapus.")
+    return redirect('tagihan_app:pembayaran_list')
 
 @login_required
 def laporan_view(request):

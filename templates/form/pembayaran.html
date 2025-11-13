@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+<!-- blok judul halaman -->
+{% block title %}Pelanggan{% endblock %}
+
+<!-- blok css tambahan -->
+{% block extra_css %}
+<style>
+    .bg-light {
+        background-color: #f7f7f9 !important;
+    }
+    .rounded-4 {
+        border-radius: 1.2rem !important;
+    }
+    .shadow-sm {
+        box-shadow: 0 2px 12px rgba(33,37,41,0.07) !important;
+    }
+    .bukal img:hover {
+        transform: scale(1.08) rotate(-6deg);
+        filter: drop-shadow(0 4px 12px rgba(33,37,41,0.12));
+    }
+</style>
+{% endblock %}
+
+<!-- blok konten utama -->
+{% block main %}
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Form Pembayaran Tagihan </h1>
+    </div>
+
+    <!-- form -->
+    <div class="row mb-4 g-3">
+        <div class="col-md-12 col-lg-7 border border-1 rounded-4 p-4 shadow-sm">
+            <div class="container mt-4">
+                <div class="mb-4">
+                    <div class="row g-2">
+                        <div class="d-flex justify-content-between align-items-end mb-3">
+                            <div class="">
+                                <div class="fw-semibold text-muted small mb-1">Pelanggan</div>
+                                <div class="fs-5 fw-bold" style="text-transform: capitalize; color: #bebebe;">{{ tagihan.pelanggan.nama }}</div>
+                            </div>
+                            {% if tagihan.status == 'lunas' %}
+                                <span class="badge badge-bg aktif">Lunas</span>
+                            {% elif tagihan.status == 'belum_lunas' %}
+                                <span class="badge badge-bg belum_lunas">Belum Lunas</span>
+                            {% elif tagihan.status == 'tertunggak' %}
+                                <span class="badge badge-bg">Tertunggak</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ tagihan.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 shadow-sm p-3 mb-2 border border-1">
+                                <div class="fw-semibold text-muted small mb-1">Periode</div>
+                                <div class="fs-5">{{ tagihan.periode_bulan|date:"F Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 shadow-sm p-3 mb-2 border border-1">
+                                <div class="fw-semibold text-muted small mb-1">Total Tagihan</div>
+                                <div class="fs-5 currency">Rp {{ tagihan.jumlah_tagihan|floatformat:0 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="bg-white rounded-3 shadow-sm p-3 mb-2 border border-1">
+                                <div class="fw-semibold text-muted small mb-1">Sudah Dibayar</div>
+                                <div class="fs-5 text-success currency">Rp {{ tagihan.jumlah_terbayar|floatformat:0 }}</div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" class="mt-3">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label>Jumlah Pembayaran</label>
+                        <input type="number" name="jumlah_pembayaran" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Metode Pembayaran</label>
+                        <select name="metode_pembayaran" class="form-select" required>
+                            <option value="tunai">Tunai</option>
+                            <option value="transfer_bank">Transfer Bank</option>
+                            <option value="ewallet">E-Wallet</option>
+                            <option value="kartu_kredit">Kartu Kredit</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Keterangan (opsional)</label>
+                        <textarea name="keterangan" class="form-control"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label>Upload Bukti Pembayaran (jika ada)</label>
+                        <input type="file" name="bukti_pembayaran" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Bayar Sekarang</button>
+                    <a href="{% url 'tagihan_app:pembayaran_list' %}" class="btn btn-secondary">Kembali</a>
+                </form>
+            </div>
+        </div>
+        <!-- bagian kanan -->
+        <div class="col-md-5">
+            <div class="bukal d-flex flex-column justify-content-center align-items-center h-100 bg-light rounded-4 shadow-sm p-4 position-relative">
+                <img src="{% static 'img/icons.svg'%}" alt="" class="" style="width: 110px; height: 110px; transition: transform 0.4s;">
+                <div class="w-100">
+                    <h5 class="text-center fw-bold mb-2" style="letter-spacing:2px;">BUKAL NET</h5>
+                    <p class="text-center text-muted mb-0" style="font-size:1rem;">Internet Cepat Koneksi Stabil</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+<!-- blok javascrip tambahan-->
+{% block script %}
+{% endblock %}

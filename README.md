@@ -28,9 +28,21 @@ cd tagihan_wifi
 ```bash
 pip install -r requirement.txt
 ```
-- 📁&nbsp;&nbsp;Run Server
+- 📁&nbsp;&nbsp;NYALAKAN REDIS
+```bash
+redis-server 
+```
+- 📁&nbsp;&nbsp;TERMINAL 1 Run Server
 ```bash
 python manage.py runserver
+```
+- 📁&nbsp;&nbsp;TERMINAL 2 WORKER
+```bash
+celery -A tagihan_wifi worker --loglevel=info -P solo
+```
+- 📁&nbsp;&nbsp;TERMINAL 2 BEAT
+```bash
+celery -A tagihan_wifi beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 ```
 <br>
 

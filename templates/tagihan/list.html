@@ -158,11 +158,11 @@
                                             {% elif tagihan.status == 'tertunggak' %}
                                                 <span class="badge badge-bg suspend">Tertunggak</span>     
                                             {% else %}
-                                                <span class="badge badge-bg">{{ pelanggan.status }}</span>                                         
+                                                <span class="badge badge-bg">{{ tagihan.status }}</span>                                         
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></button>
+                                            <a href="{% url 'tagihan_app:pembayaran_add' tagihan.id %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
                                             <button class="btn btn-sm btn-outline-success"><i class="bi bi-currency-dollar"></i></button>
                                         </td>
                                     </tr>
